@@ -1,0 +1,5 @@
+<Directory /www/groups/i/iz_comp353_2>
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Require all granted
+</Directory>
