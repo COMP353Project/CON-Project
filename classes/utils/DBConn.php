@@ -36,7 +36,7 @@ class DBConn {
 
     }
 
-    static private function getDefaultConnectionString() {
+    static private function getDefaultConnectionParams() {
         return [
             "dsn" => getenv("DATABASE_URL"),
             "user" => getenv("DATABASE_USERNAME"),
