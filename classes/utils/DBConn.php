@@ -25,6 +25,7 @@ class DBConn {
         $this->autoCommit = $autoCommit;
         if (is_null($dsn)) {
             $this->dbConnectionParams = self::getDefaultConnectionParams();
+            echo var_dump($this->dbConnectionParams);
         }
 
         $this->conn = new PDO($this->dbConnectionParams['dsn'], $this->dbConnectionParams['user'], $this->dbConnectionParams['pwd']);
@@ -38,14 +39,22 @@ class DBConn {
 
     static private function getDefaultConnectionParams() {
         return [
-            "dsn" => getenv("DATABASE_URL"),
-            "user" => getenv("DATABASE_USERNAME"),
-            "pwd" => getenv("DATABASE_PWD")
+            "dsn" => "mysql:host=izc353.encs.concordia.ca;port=3306;dbname=izc353_2",
+            "user" => "izc353_2",
+            "pwd" => "BYnAgh"
         ];
     }
 
     public function query(string $sql) {
         // for future reference:https://stackoverflow.com/questions/2770273/pdostatement-to-json
         return $this->conn->query($sql);
+    }
+
+    public function prepare(string $sql) {
+	return $this->conn->prepare($sql);
+    }
+    
+    public function close() {
+        $this->connection = null;
     }
 }
