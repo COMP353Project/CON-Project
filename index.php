@@ -21,4 +21,7 @@ try {
 
 } catch (Exception $e) {
     echo "RUH ROH";
+    echo "\n\nEXCEPTION:\n" . $e->getMessage() . "\n\n\n";
+
+    var_dump($e);
 }
