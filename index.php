@@ -2,13 +2,13 @@
 include_once(__DIR__ . "/classes/utils/DB.php");
 include_once(__DIR__ . "/classes/utils/DBConn.php");
 
-$db = DB::getInstance();
+$db = classes\utils\DB::getInstance();
 
 $sql = <<<EOD
 SHOW tables;
 EOD;
 
-/* @var $dbConn \classes\utils\DBConn */
+/* @var $dbConn classes\utils\DBConn */
 try {
 
     $dbConn = $db->getConnection();
