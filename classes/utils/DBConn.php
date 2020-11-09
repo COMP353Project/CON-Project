@@ -24,8 +24,7 @@ class DBConn {
         $this->inTx = false;
         $this->autoCommit = $autoCommit;
         if (is_null($dsn)) {
-            $this->dbConnectionParams = self::getDefaultConnectionParams();
-            echo var_dump($this->dbConnectionParams);
+            $this->dbConnectionParams = self::getDefaultConnectionParams(); 
         }
 
         $this->conn = new PDO($this->dbConnectionParams['dsn'], $this->dbConnectionParams['user'], $this->dbConnectionParams['pwd']);
