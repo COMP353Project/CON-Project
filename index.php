@@ -8,8 +8,6 @@ $sql = <<<EOD
 SHOW tables;
 EOD;
 
-phpinfo();
-
 /* @var $dbConn classes\utils\DBConn */
 try {
 
