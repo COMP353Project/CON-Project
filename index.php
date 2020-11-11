@@ -1,14 +1,19 @@
 <?php
-include_once(__DIR__ . "/classes/utils/DB.php");
-include_once(__DIR__ . "/classes/utils/DBConn.php");
+include_once(__DIR__ . '/src/app/App.php');
+include_once(__DIR__ . '/src/web/routes.php');
 
-$db = classes\utils\DB::getInstance();
+use utils\DB;
+use app\App;
+use web\dbAPI;
+
+
+$db = DB::getInstance();
 
 $sql = <<<EOD
 SHOW tables;
 EOD;
 
-/* @var $dbConn classes\utils\DBConn */
+/* @var $dbConn utils\DBConn */
 try {
 
     $dbConn = $db->getConnection();
@@ -20,3 +25,10 @@ try {
 
     var_dump($e);
 }
+
+// create the app
+$app = new App();
+// register all routes
+setupRoutes($app);
+// run the app to service the request
+$app->run();
