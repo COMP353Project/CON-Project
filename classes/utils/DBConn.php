@@ -31,9 +31,9 @@ class DBConn {
 
     static private function getDefaultConnectionParams() {
         return [
-            "dsn" => "mysql:host=izc353.encs.concordia.ca;port=3306;dbname=izc353_2",
-            "user" => "izc353_2",
-            "pwd" => "BYnAgh"
+            "dsn" => getenv("DATABASE_URL"),
+            "user" => getenv("DATABASE_USERNAME"),
+            "pwd" => getenv("DATABASE_PWD")
         ];
     }
 
