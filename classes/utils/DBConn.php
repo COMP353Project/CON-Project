@@ -4,26 +4,21 @@ namespace classes\utils;
 
 use \Exception;
 use \PDO;
+use \PDOStatement;
+
 
 class DBConn {
     // Postgres database connection
     protected $conn;
     protected $dbConnectionParams;
-    protected $inTx;
-    protected $autoCommit;
-
 
     /**
      * DBConn constructor.
-     * @param string|null $dsn
-     * @param $autoCommit
+     * @param array|null $dbConnectionParams
      * @throws Exception
      */
-    public function __construct(?array $dsn, $autoCommit)
-    {
-        $this->inTx = false;
-        $this->autoCommit = $autoCommit;
-        if (is_null($dsn)) {
+    public function __construct(?array $dbConnectionParams) {
+        if (is_null($dbConnectionParams)) {
             $this->dbConnectionParams = self::getDefaultConnectionParams(); 
         }
 
@@ -32,8 +27,6 @@ class DBConn {
         if (!$this->conn) {
             throw new Exception('connect Error');
         }
-        $this->dsn = $dsn;
-
     }
 
     static private function getDefaultConnectionParams() {
@@ -45,12 +38,11 @@ class DBConn {
     }
 
     public function query(string $sql) {
-        // for future reference:https://stackoverflow.com/questions/2770273/pdostatement-to-json
-        return $this->conn->query($sql);
-    }
-
-    public function prepare(string $sql) {
-	return $this->conn->prepare($sql);
+        /* @var $statement PDOStatement */
+        $statement = $this->conn->prepare($sql);
+        $statement->execute();
+        $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+        return json_encode($results);
     }
     
     public function close() {

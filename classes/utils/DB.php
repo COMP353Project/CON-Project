@@ -6,7 +6,6 @@ namespace classes\utils;
 class DB {
     public static $instance;
     protected $pool;
-    private $autoCommit;
 
     public static function getInstance() {
         if (!isset(self::$instance)) {
@@ -15,9 +14,8 @@ class DB {
         return self::$instance;
     }
 
-    private function __construct(bool $autoCommit = false) {
+    private function __construct() {
         $this->pool = [];
-        $this->autoCommit = $autoCommit;
     }
 
     public function __destruct() {
@@ -28,32 +26,24 @@ class DB {
 
     /**
      * @param string $name
-     * @param string|null $dsn
+     * @param array|null $dsn
      * @return mixed
      * @throws \Exception
      */
-    public function getConnection(string $name = 'default', string $dsn = null) {
+    public function getConnection(string $name = 'default', ?array $dsn = null) {
         if (!isset($this->pool[$name])) {
-            $this->pool[$name] = new DBConn($dsn, $this->autoCommit);
+            $this->pool[$name] = new DBConn($dsn);
         }
         return $this->pool[$name];
     }
 
     /**
      * @param string $name
-     * @param string|null $dsn
+     * @param array|null $dsn
      * @return mixed
      * @throws \Exception
      */
-    public static function conn(string $name = 'default', string $dsn = null) {
+    public static function conn(string $name = 'default', ?array $dsn = null) {
         return self::getInstance()->getConnection($name, $dsn);
-    }
-
-    public static function setAutoCommit(bool $autoCommit = false) {
-        $that = self::getInstance();
-        $that->autoCommit = $autoCommit;
-        foreach ($that->pool as $conn) {
-            $conn->setAutoCommit($autoCommit);
-        }
     }
 }

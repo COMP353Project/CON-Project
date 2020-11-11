@@ -14,12 +14,7 @@ phpinfo();
 try {
 
     $dbConn = $db->getConnection();
-    /* @var $statement PDOStatement */
-    $statement = $dbConn->prepare($sql);
-    $statement->execute();
-    $results = $statement->fetchAll(PDO::FETCH_ASSOC);
-    $json = json_encode($results);
-    echo print_r($json);
+    echo $dbConn->query($sql);
 
 } catch (Exception $e) {
     echo "RUH ROH";
