@@ -12,5 +12,6 @@ use utils\DBConn;
 
 
 function getUsers($requestParams) {
-
+    echo "\n\n";
+    echo "REQUEST HANDLED BY GETUSERS";
 }
