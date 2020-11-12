@@ -20,4 +20,10 @@ function setupRoutes($app) {
 
     $app->get('/createaccount', "Web\\PageRenderers\\renderSignUp");
     $app->post('/createaccount', 'Web\\DbAPI\\signUp');
+
+    $app->get('/login', 'Web\\PageRenderers\\renderLogIn');
+    $app->post('/login', 'Web\\DbAPI\\logIn');
+
+    $app->get("/logout", "Web\\DbAPI\\logOut");
+    $app->get("/favicon.ico", function() {});
 }
