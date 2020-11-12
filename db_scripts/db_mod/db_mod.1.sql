@@ -5,5 +5,5 @@ create table users(
                       lastname TEXT,
                       password TEXT NOT NULL,
                       isactive BOOL NOT NULL DEFAULT TRUE,
-                      createdon TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                      createdon TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
