@@ -1,6 +1,6 @@
 <?php
 
-namespace utils;
+namespace Utils;
 
 
 class DB {

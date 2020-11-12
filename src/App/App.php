@@ -1,10 +1,10 @@
 <?php
 
-namespace app;
+namespace App;
 
-include_once(__DIR__ . "/../web/dbAPI.php");
+include_once(__DIR__ . "/../Web/DbAPI.php");
 
-use web\dbAPI;
+use Web\DbAPI;
 
 
 class App {
@@ -27,11 +27,19 @@ class App {
 
     /**
      * @param string $route
-     * @param callable $responder
+     * @param callable $servicingFunction
      */
-    public function get(string $route, $responder) {
+    public function get(string $route, $servicingFunction) {
         // method to register a get route
-        $this->getRoutes[$route] = $responder;
+        $this->getRoutes[$route] = $servicingFunction;
+    }
+
+    /**
+     * @param string $route
+     * @param callable $servicingFunction
+     */
+    public function post(string $route, $servicingFunction) {
+        $this->postRoutes[$route] = $servicingFunction;
     }
 
     public function run() {
@@ -41,6 +49,8 @@ class App {
                 $this->routesForVerb = $this->getRoutes;
                 break;
             case "POST":
+                $this->routesForVerb = $this->postRoutes;
+                break;
             case "DELETE":
             case "PUT":
             default:
@@ -55,7 +65,9 @@ class App {
         $routeRequested = $_SERVER['REQUEST_URI'];
         // get the function associated with the route
         $servicingFunctionName = $this->routesForVerb[$routeRequested];
-        // call the function
+        // TODO MAYBE create Request (would parse route for args, query for params, etc...), Response classes
+        //      with those created, instantiate one of each here, and pass to servicingFunction
+        // call the servicingFunction
         call_user_func_array($servicingFunctionName, [[]]);
     }
 }

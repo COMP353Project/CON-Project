@@ -1,6 +1,6 @@
 <?php
 
-namespace utils;
+namespace Utils;
 
 use \Exception;
 use \PDO;
@@ -22,7 +22,7 @@ class DBConn {
             $this->dbConnectionParams = self::getDefaultConnectionParams(); 
         }
 
-        $this->conn = new PDO($this->dbConnectionParams['dsn'], $this->dbConnectionParams['user'], $this->dbConnectionParams['pwd']);
+        $this->conn = new PDO($this->dbConnectionParams['dsn'], $this->dbConnectionParams['user'], $this->dbConnectionParams['pwd'], [PDO::ERRMODE_EXCEPTION]);
 
         if (!$this->conn) {
             throw new Exception('connect Error');
@@ -41,8 +41,14 @@ class DBConn {
         /* @var $statement PDOStatement */
         $statement = $this->conn->prepare($sql);
         $statement->execute();
-        $results = $statement->fetchAll(PDO::FETCH_ASSOC);
-        return json_encode($results);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function queryWithValues(string $sql, array $values) {
+        /* @var $statement PDOStatement */
+        $statement = $this->conn->prepare($sql);
+        $statement->execute($values);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
     
     public function close() {
