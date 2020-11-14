@@ -3,12 +3,12 @@
 
 namespace Web\DbAPI;
 
-include_once(__DIR__ . "/../Utils/DB.php");
-include_once(__DIR__ . "/../Utils/DBConn.php");
+include_once(__DIR__ . "/../Utils/DB/DB.php");
+include_once(__DIR__ . "/../Utils/DB/DBConn.php");
 
 
-use Utils\DB;
-use Utils\DBConn;
+use Utils\DB\DB;
+use Utils\DB\DBConn;
 
 /* =====================================================================
  *

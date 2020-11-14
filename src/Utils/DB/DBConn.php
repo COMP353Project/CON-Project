@@ -1,6 +1,6 @@
 <?php
 
-namespace Utils;
+namespace Utils\DB;
 
 use \Exception;
 use \PDO;
@@ -52,6 +52,6 @@ class DBConn {
     }
     
     public function close() {
-        $this->connection = null;
+        $this->conn = null;
     }
 }
