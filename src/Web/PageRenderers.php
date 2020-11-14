@@ -6,9 +6,6 @@ use Http\Request;
 
 function renderHomePage(Request $request, $args) {
     // render the home page
-    if (isset($_SESSION['userId'])) {
-        error_log("here");
-    }
 
     include __DIR__ . "/../../static/html/home.html";
 }

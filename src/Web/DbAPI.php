@@ -9,27 +9,40 @@ include_once(__DIR__ . "/../Utils/DBConn.php");
 
 use Utils\DB;
 use Utils\DBConn;
-use Http\Request;
 
 /* =====================================================================
  *
- * FUNCTIONS ASSOCIATED WITH ROUTES
+ * FUNCTIONS TO INTERACT WITH DB
  *
  * =====================================================================
  */
 
+function getUsersFromDB($userIds) {
+    $userIds = (is_array($userIds)) ? $userIds : [$userIds];
+    $idCounter = 0;
+    $parametrizedIds = [];
+    $userIdParams = implode(
+        ", ",
+        array_map(
+            function($id) use (&$idCounter, &$parametrizedIds, $userIds) {
+                $idCounter++;
+                $idx = ":user_id_" . $idCounter;
+                $parametrizedIds[$idx] = $userIds[$idCounter - 1];
+                return $idx;
+            },
+            $userIds
+        )
+    );
+    $whereClause = (sizeof($userIds) == 0) ? "" : "WHERE id IN ({$userIdParams})";
+    $usersSQL = "select id, firstname, lastname, isactive from users {$whereClause};";
+    /* @var $dbConn DBConn */
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($usersSQL, $parametrizedIds);
 
-function getUsers(Request $request, $args) {
-    echo "\n\n";
-    echo "REQUEST HANDLED BY GETUSERS";
+    echo json_encode($res);
 }
 
-function signUp(Request $request, $args) {
-
-    $email = $_POST["email"];
-    $unencryptedPwd = $_POST["password"];
-    $firstName = $_POST["firstName"];
-    $lastName = $_POST["lastName"];
+function addUserToDB($email, $unencryptedPwd, $firstName, $lastName) {
 
     if (checkUserExists($email)) {
         // user already exists
@@ -50,10 +63,7 @@ function signUp(Request $request, $args) {
     }
 }
 
-function logIn(Request $request, $args) {
-
-    $email = $_POST["email"];
-    $unencryptedPwd = $_POST["password"];
+function logInUser($email, $unencryptedPwd) {
 
     if (checkUserExists($email)) {
         // user exists, verify login
@@ -74,8 +84,13 @@ function logIn(Request $request, $args) {
                 // https://www.w3schools.com/php/php_sessions.asp
                 // send user back to home
                 $_SESSION["userId"] = $res[0]["id"];
-
-                header("Location: /");
+                if (empty($_SESSION['urlAfterLogin'])) {
+                    $nextUrl = "/";
+                } else {
+                    $nextUrl = $_SESSION['urlAfterLogin'];
+                    unset($_SESSION['urlAfterLogin']);
+                }
+                header("Location: " . $nextUrl);
             }
         } else {
             // invalid password, send back to login
@@ -88,21 +103,12 @@ function logIn(Request $request, $args) {
 
 }
 
-function logOut(Request $request, $args) {
-    // destroy the session, send back to home
-    // https://www.w3schools.com/php/php_sessions.asp
-    session_unset();
-    session_destroy();
-    header('Location: /');
-}
-
 /* =====================================================================
  *
  * HELPERS
  *
  * =====================================================================
  */
-
 
 function checkUserExists(string $email) {
     $checkUserExistsSql = 'SELECT EXISTS(select email from users where email = :email) as "exists";';

@@ -2,6 +2,7 @@
 
 namespace Http;
 use Exception;
+use Http\ConHttpException;
 
 class Request {
 
@@ -113,7 +114,7 @@ class Request {
         if (!is_null($requestedEndpoint)) {
             return [$requestedEndpoint, $parsedArgs];
         } else {
-            throw new Exception("Route does not exist");
+            throw new ConHttpException("Route does not exist", 404);
         }
     }
 
@@ -122,6 +123,14 @@ class Request {
             if (strpos($key, "HTTP_") !== false) {
                 $this->headers[substr($key, 5)] = $value;
             }
+        }
+    }
+
+    public function getQueryParam($paramName, $default = null) {
+        if (isset($this->queryParams[$paramName])) {
+            return $this->queryParams[$paramName];
+        } else {
+            return $default;
         }
     }
 }

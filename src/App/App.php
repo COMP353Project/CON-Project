@@ -4,10 +4,12 @@ namespace App;
 
 include_once(__DIR__ . "/../Web/DbAPI.php");
 include_once(__DIR__ . "/../Http/Request.php");
+require_once(__DIR__ . "/../Http/ConHttpException.php");
 
 use Web\DbAPI;
 use Http\Request;
 use Exception;
+use Http\ConHttpException;
 
 
 class App {
@@ -32,26 +34,31 @@ class App {
         $this->verb = null;
     }
 
-    private function registerRoute(array &$routeArray, string $route, $servicingFunction) {
-        $routeArray[$route] = $servicingFunction;
+    private function registerRoute(array &$routeArray, string $route, $servicingFunction, $requiresLogin = false) {
+        $routeArray[$route] = [
+            'function' => $servicingFunction,
+            'requiresLogin' => $requiresLogin
+        ];
         $this->allRoutes[] = $route;
     }
 
     /**
      * @param string $route
      * @param callable $servicingFunction
+     * @param bool $requiresLogin
      */
-    public function get(string $route, $servicingFunction) {
+    public function get(string $route, $servicingFunction, $requiresLogin = false) {
         // method to register a get route
-        $this->registerRoute($this->getRoutes, $route, $servicingFunction);
+        $this->registerRoute($this->getRoutes, $route, $servicingFunction, $requiresLogin);
     }
 
     /**
      * @param string $route
      * @param callable $servicingFunction
+     * @param bool $requiresLogin
      */
-    public function post(string $route, $servicingFunction) {
-        $this->registerRoute($this->postRoutes, $route, $servicingFunction);
+    public function post(string $route, $servicingFunction, $requiresLogin = false) {
+        $this->registerRoute($this->postRoutes, $route, $servicingFunction, $requiresLogin);
     }
 
     public function run() {
@@ -60,9 +67,13 @@ class App {
             session_start();
             // service the request
             $this->service($request);
+        } catch (ConHttpException $e) {
+            http_response_code($e->getStatusCode());
+            echo $e->getMessage();
         } catch (Exception $e) {
+            // something else bad happened
             http_response_code(500);
-            echo "Internal Server Error.";
+            echo "An error occurred processing the request.";
         }
     }
 
@@ -80,16 +91,28 @@ class App {
             case "PUT":
             default:
                 // throw exception with HTTP error code if not implemented
+                throw new ConHttpException("Method not implemented", 405);
                 break;
         }
         // get the route
         // get the function associated with the route
         [$route, $parsedArgs] =  $request->extractEndPoint($this->allRoutes);
-        $servicingFunctionName = $this->routesForVerb[$route];
+
         // TODO MAYBE create Response class
         //      with those created, instantiate one of each here, and pass to servicingFunction
-        // call the servicingFunction
-        call_user_func_array($servicingFunctionName, [$request, $parsedArgs]);
+
+        // check if login required
+        if (!$this->routesForVerb[$route]['requiresLogin'] || !empty($_SESSION['userId'])) {
+            // user is logged in
+            // call the servicingFunction
+            $servicingFunctionName = $this->routesForVerb[$route]['function'];
+            call_user_func_array($servicingFunctionName, [$request, $parsedArgs]);
+        } else {
+            // user is not logged in
+            // redirect to login and store route to redirect after login
+            $_SESSION['urlAfterLogin'] = $request->getRoute();
+            header("Location: /login");
+        }
 
         if ($this->verb == "POST") {
             unset($_POST);
