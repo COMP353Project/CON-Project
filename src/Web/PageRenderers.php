@@ -2,8 +2,9 @@
 
 namespace Web\PageRenderers;
 
+use Http\Request;
 
-function renderHomePage($requestParams) {
+function renderHomePage(Request $request, $args) {
     // render the home page
     if (isset($_SESSION['userId'])) {
         error_log("here");
@@ -12,10 +13,10 @@ function renderHomePage($requestParams) {
     include __DIR__ . "/../../static/html/home.html";
 }
 
-function renderSignUp($requestParams) {
+function renderSignUp(Request $request, $args) {
     include __DIR__ . "/../../static/html/registration.html";
 }
 
-function renderLogIn($requestParams) {
+function renderLogIn(Request $request, $args) {
     include __DIR__ . "/../../static/html/signin.html";
 }

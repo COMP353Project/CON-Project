@@ -3,12 +3,16 @@
 namespace App;
 
 include_once(__DIR__ . "/../Web/DbAPI.php");
+include_once(__DIR__ . "/../Http/Request.php");
 
 use Web\DbAPI;
+use Http\Request;
+use Exception;
 
 
 class App {
 
+    protected $allRoutes;
     protected $getRoutes;
     protected $postRoutes;
     protected $deleteRoutes;
@@ -19,6 +23,7 @@ class App {
 
     public function __construct() {
         // define containers for routes
+        $this->allRoutes = [];
         $this->getRoutes = [];
         $this->postRoutes = [];
         $this->deleteRoutes = [];
@@ -27,13 +32,18 @@ class App {
         $this->verb = null;
     }
 
+    private function registerRoute(array &$routeArray, string $route, $servicingFunction) {
+        $routeArray[$route] = $servicingFunction;
+        $this->allRoutes[] = $route;
+    }
+
     /**
      * @param string $route
      * @param callable $servicingFunction
      */
     public function get(string $route, $servicingFunction) {
         // method to register a get route
-        $this->getRoutes[$route] = $servicingFunction;
+        $this->registerRoute($this->getRoutes, $route, $servicingFunction);
     }
 
     /**
@@ -41,12 +51,24 @@ class App {
      * @param callable $servicingFunction
      */
     public function post(string $route, $servicingFunction) {
-        $this->postRoutes[$route] = $servicingFunction;
+        $this->registerRoute($this->postRoutes, $route, $servicingFunction);
     }
 
     public function run() {
         // decide which routes to look in
-        $this->verb = $_SERVER['REQUEST_METHOD'];
+        try {
+            $request = new Request();
+            session_start();
+            // service the request
+            $this->service($request);
+        } catch (Exception $e) {
+            http_response_code(500);
+        }
+    }
+
+    private function service(Request $request) {
+
+        $this->verb = $request->getMethod();
         switch($this->verb) {
             case "GET":
                 $this->routesForVerb = $this->getRoutes;
@@ -59,20 +81,14 @@ class App {
             default:
                 break;
         }
-        // service the request
-        $this->service();
-    }
-
-    private function service() {
-        session_start();
         // get the route
-        $routeRequested = $_SERVER['REQUEST_URI'];
         // get the function associated with the route
-        $servicingFunctionName = $this->routesForVerb[$routeRequested];
-        // TODO MAYBE create Request (would parse route for args, query for params, etc...), Response classes
+        [$route, $parsedArgs] =  $request->extractEndPoint($this->allRoutes);
+        $servicingFunctionName = $this->routesForVerb[$route];
+        // TODO MAYBE create Response class
         //      with those created, instantiate one of each here, and pass to servicingFunction
         // call the servicingFunction
-        call_user_func_array($servicingFunctionName, [[]]);
+        call_user_func_array($servicingFunctionName, [$request, $parsedArgs]);
 
         if ($this->verb == "POST") {
             unset($_POST);

@@ -26,4 +26,8 @@ function setupRoutes($app) {
 
     $app->get("/logout", "Web\\DbAPI\\logOut");
     $app->get("/favicon.ico", function() {});
+
+    $app->get("/route/{withVar}/for/testing", function() {echo 'IT WORKED';});
+
+    $app->get("/route/{withVar}/for/{testing}/doodoo", function() {echo 'IT WORKED';});
 }

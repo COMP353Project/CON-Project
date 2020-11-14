@@ -9,15 +9,22 @@ include_once(__DIR__ . "/../Utils/DBConn.php");
 
 use Utils\DB;
 use Utils\DBConn;
+use Http\Request;
+
+/* =====================================================================
+ *
+ * FUNCTIONS ASSOCIATED WITH ROUTES
+ *
+ * =====================================================================
+ */
 
 
-function getUsers($requestParams) {
+function getUsers(Request $request, $args) {
     echo "\n\n";
     echo "REQUEST HANDLED BY GETUSERS";
 }
 
-
-function signUp($requestParams) {
+function signUp(Request $request, $args) {
 
     $email = $_POST["email"];
     $unencryptedPwd = $_POST["password"];
@@ -43,7 +50,7 @@ function signUp($requestParams) {
     }
 }
 
-function logIn($requestParams) {
+function logIn(Request $request, $args) {
 
     $email = $_POST["email"];
     $unencryptedPwd = $_POST["password"];
@@ -81,6 +88,22 @@ function logIn($requestParams) {
 
 }
 
+function logOut(Request $request, $args) {
+    // destroy the session, send back to home
+    // https://www.w3schools.com/php/php_sessions.asp
+    session_unset();
+    session_destroy();
+    header('Location: /');
+}
+
+/* =====================================================================
+ *
+ * HELPERS
+ *
+ * =====================================================================
+ */
+
+
 function checkUserExists(string $email) {
     $checkUserExistsSql = 'SELECT EXISTS(select email from users where email = :email) as "exists";';
 
@@ -88,12 +111,4 @@ function checkUserExists(string $email) {
     $dbConn = DB::getInstance()->getConnection();
     $res = $dbConn->queryWithValues($checkUserExistsSql, [":email" => $email]);
     return $res[0]["exists"] == "1";
-}
-
-function logOut($requestParams) {
-    // destroy the session, send back to home
-    // https://www.w3schools.com/php/php_sessions.asp
-    session_unset();
-    session_destroy();
-    header('Location: /');
 }
