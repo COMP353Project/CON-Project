@@ -55,7 +55,6 @@ class App {
     }
 
     public function run() {
-        // decide which routes to look in
         try {
             $request = new Request();
             session_start();
@@ -63,11 +62,12 @@ class App {
             $this->service($request);
         } catch (Exception $e) {
             http_response_code(500);
+            echo "Internal Server Error.";
         }
     }
 
     private function service(Request $request) {
-
+        // decide which routes to look in
         $this->verb = $request->getMethod();
         switch($this->verb) {
             case "GET":
@@ -79,6 +79,7 @@ class App {
             case "DELETE":
             case "PUT":
             default:
+                // throw exception with HTTP error code if not implemented
                 break;
         }
         // get the route
