@@ -2,6 +2,8 @@
 
 namespace Utils\DB;
 
+require_once(__DIR__ . "/DbAccessColumns.php");
+
 use \Exception;
 use \PDO;
 use \PDOStatement;
@@ -44,11 +46,30 @@ class DBConn {
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function queryWithValues(string $sql, array $values) {
+    public function queryWithValues(string $sql, array $values, array $oneOffMap = []) {
         /* @var $statement PDOStatement */
         $statement = $this->conn->prepare($sql);
         $statement->execute($values);
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
+        $initialResult = $statement->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(
+            function ($row) use ($oneOffMap) {
+                $mappedRow = [];
+                foreach ($row as $key => $value) {
+                    // rename the column
+                    $map = (isset($oneOffMap[$key])) ? $oneOffMap : DbAccessColumns::$columnMapping;
+                    // cast if necessary
+                    if ($map[$key]["type"] != "string") {
+                        // DO THE CAST
+                        // TODO deal with NULL probably
+                        settype($value, $map[$key]["type"]);
+                    }
+                    $key = (isset($map[$key]['name'])) ? $map[$key]['name'] : $key;
+                    $mappedRow[$key] = $value;
+                }
+                return $mappedRow;
+            },
+            $initialResult
+        );
     }
     
     public function close() {

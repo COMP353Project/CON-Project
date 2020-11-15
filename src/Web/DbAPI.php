@@ -34,7 +34,7 @@ function getUsersFromDB($userIds) {
         )
     );
     $whereClause = (sizeof($userIds) == 0) ? "" : "WHERE id IN ({$userIdParams})";
-    $usersSQL = "select id, firstname, lastname, isactive from users {$whereClause};";
+    $usersSQL = "select id, firstname, lastname, isactive, createdon from users {$whereClause};";
     /* @var $dbConn DBConn */
     $dbConn = DB::getInstance()->getConnection();
     $res = $dbConn->queryWithValues($usersSQL, $parametrizedIds);
@@ -116,5 +116,5 @@ function checkUserExists(string $email) {
     /* @var $dbConn DBConn */
     $dbConn = DB::getInstance()->getConnection();
     $res = $dbConn->queryWithValues($checkUserExistsSql, [":email" => $email]);
-    return $res[0]["exists"] == "1";
+    return $res[0]["exists"];
 }
