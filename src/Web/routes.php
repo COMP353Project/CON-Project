@@ -50,18 +50,18 @@ function getUsers(Request $request, $args) {
 }
 
 function signUp(Request $request, $args) {
-    $email = $_POST["email"];
-    $unencryptedPwd = $_POST["password"];
-    $firstName = $_POST["firstName"];
-    $lastName = $_POST["lastName"];
+    $email = $request->getPostBodyKey("email");
+    $unencryptedPwd = $request->getPostBodyKey("password");
+    $firstName = $request->getPostBodyKey("firstName");
+    $lastName = $request->getPostBodyKey("lastName");
 
     DbAPI\addUserToDB($email, $unencryptedPwd, $firstName, $lastName);
 }
 
 
 function logIn(Request $request, $args) {
-    $email = $_POST["email"];
-    $unencryptedPwd = $_POST["password"];
+    $email = $request->getPostBodyKey("email");
+    $unencryptedPwd = $request->getPostBodyKey("password");
 
     DbAPI\logInUser($email, $unencryptedPwd);
 }

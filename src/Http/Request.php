@@ -31,8 +31,23 @@ class Request {
             $this->extractQueryParams();
         }
 
-        // TODO if POST, PARSE BODY
-
+        // if POST, PARSE BODY
+        if ($this->method == "POST") {
+            if ($this->headers["CONTENT_TYPE"] == "application/json") {
+                // json is easy, set body to be json decoded input
+                $inputJSON = file_get_contents('php://input');
+                $this->body = json_decode($inputJSON, true);
+            } elseif (
+                $this->headers["CONTENT_TYPE"] == "application/x-www-form-urlencoded" ||
+                strpos($this->headers["CONTENT_TYPE"], "multipart/form-data;")
+            ) {
+                // post is form data, go through it
+                $this->body = [];
+                foreach($_POST as $key => $value) {
+                    $this->body[$key] = $value;
+                }
+            }
+        }
     }
 
     public function getMethod() {
@@ -122,6 +137,8 @@ class Request {
         foreach ($_SERVER as $key => $value) {
             if (strpos($key, "HTTP_") !== false) {
                 $this->headers[substr($key, 5)] = $value;
+            } elseif (in_array($key, ["CONTENT_TYPE", "CONTENT_LENGTH"])) {
+                $this->headers[$key] = $value;
             }
         }
     }
@@ -132,5 +149,9 @@ class Request {
         } else {
             return $default;
         }
+    }
+
+    public function getPostBodyKey($key) {
+        return $this->body[$key];
     }
 }
