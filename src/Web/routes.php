@@ -28,7 +28,10 @@ function setupRoutes($app) {
     $app->post('/login', 'logIn');
 
     $app->get("/logout", "logOut");
-    $app->get("/favicon.ico", function(Request $request, $args) {include __DIR__ . '/../../static/images/icons/icons8-new-york-80.png';});
+    $app->get("/favicon.ico", function(Request $request, $args) {renderIcon($request, ["iconName" => "icons8-new-york-80.png"]);});
+    $app->get("/images/{imageName}", "renderImage");
+    $app->get("/icons2/{iconName}", "renderIcon");
+    $app->get("/css/{styleSheet}", "renderStylesheet");
 
     $app->get("/route/{withVar}/for/testing", function(Request $request, $args) {echo 'IT WORKED';}, true);
 
@@ -64,6 +67,23 @@ function logIn(Request $request, $args) {
     $unencryptedPwd = $request->getPostBodyKey("password");
 
     DbAPI\logInUser($email, $unencryptedPwd);
+}
+
+function renderImage(Request $request, $args) {
+    renderStatic("/../../static/images/pics/", $args['imageName']);
+}
+
+function renderIcon(Request $request, $args) {
+    renderStatic("/../../static/images/icons/", $args['iconName']);
+}
+
+function renderStylesheet(Request $request, $args) {
+    header("Content-type: text/css");
+    renderStatic("/../../static/css/", $args['styleSheet']);
+}
+
+function renderStatic($path, $name) {
+    include  __DIR__ . $path . $name;
 }
 
 
