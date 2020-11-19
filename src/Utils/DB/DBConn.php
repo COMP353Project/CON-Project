@@ -56,7 +56,7 @@ class DBConn {
                 $mappedRow = [];
                 foreach ($row as $key => $value) {
                     // rename the column
-                    $map = (isset($oneOffMap[$key])) ? $oneOffMap : DbAccessColumns::$columnMapping;
+                    $map = (isset($oneOffMap[$key])) ? $oneOffMap : DbAccessColumns::columnMapping;
                     // cast if necessary
                     if ($map[$key]["type"] != "string") {
                         // DO THE CAST

@@ -3,7 +3,7 @@
 namespace Utils\DB;
 
 class DbAccessColumns {
-    public static $columnMapping = [
+    public const columnMapping = [
         "id" => [
             "type" => "string",
         ],
