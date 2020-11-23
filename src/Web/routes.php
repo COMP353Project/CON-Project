@@ -82,6 +82,7 @@ function renderStylesheet(Request $request, $args) {
 }
 
 function renderStatic($path, $name, $baseType) {
+    header_remove("Content-Length");
     header("Content-type: {$baseType}" . explode(".", $name)[1]);
     include  __DIR__ . $path . $name;
 }
