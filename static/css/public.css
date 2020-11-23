@@ -83,7 +83,7 @@
 }
 /*---------Services----------*/
 #facilities{
-    background-image:linear-gradient(rgba(0,0,0,0.8),rgba(0,0,0,0.8)),url('/images/gym.jpg');
+    background-image:linear-gradient(rgba(0,0,0,0.8),rgba(0,0,0,0.8)),url('/images/gym2.jpg');
     background-size: cover;
     background-postition:center;
     color:#efefef !important;
