@@ -70,19 +70,19 @@ function logIn(Request $request, $args) {
 }
 
 function renderImage(Request $request, $args) {
-    renderStatic("/../../static/images/pics/", $args['imageName']);
+    renderStatic("/../../static/images/pics/", $args['imageName'], 'image/');
 }
 
 function renderIcon(Request $request, $args) {
-    renderStatic("/../../static/images/icons/", $args['iconName']);
+    renderStatic("/../../static/images/icons/", $args['iconName'], 'image/');
 }
 
 function renderStylesheet(Request $request, $args) {
-    header("Content-type: text/css");
-    renderStatic("/../../static/css/", $args['styleSheet']);
+    renderStatic("/../../static/css/", $args['styleSheet'], 'text/');
 }
 
-function renderStatic($path, $name) {
+function renderStatic($path, $name, $baseType) {
+    header("Content-type: {$baseType}" . explode(".", $name)[1]);
     include  __DIR__ . $path . $name;
 }
 
