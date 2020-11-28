@@ -103,6 +103,24 @@ function logInUser($email, $unencryptedPwd) {
 
 }
 
+function checkUserHasCreatePermission($resp, $userId): array {
+    $sql = <<<EOD
+select ur.userid, ur.roleid, r.name
+from user_roles ur
+join roles r
+on ur.roleid = r.id
+where ur.userid = :userid
+EOD;
+    $resp['loggedIn'] = true;
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($sql, [":userid" => $userId]);
+    if ($res[0]['name'] == 'superuser') {
+        $resp['hasCreatePermission'] = true;
+    }
+
+    return $resp;
+}
+
 /* =====================================================================
  *
  * HELPERS

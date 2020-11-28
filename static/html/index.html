@@ -10,27 +10,27 @@
         <div class="form-box">
             <div class="button-box">
                 <div id="btn"></div>
-                <button type="button" class="toggle-btn" onclick="login()">Login</button>
+                <button type="button" class="toggle-btn" onclick="login()">Log In</button>
                 <button type="button" class="toggle-btn" onclick="register()">Register</button>
             </div>
             <div class="button-box2">
                 <div id="btn2"></div>
-                <button type="button" class="toggle-btn" onclick="notregistered()">SCPK Public Website</button>
+                <button type="button" class="toggle-btn" onclick="sendHome()">SCPK Public Website</button>
             </div>
 
-            <form id="login" class="input-group">
-                <input type="text" class="input-field" placeholder="User ID" required>
-                <input type="text" class="input-field" placeholder="Enter Password" required>
+            <form id="login" class="input-group" action="/login" method="post">
+                <input type="text" name="email" id="email" class="input-field" placeholder="Email" required>
+                <input type="password" name="password" id="password" class="input-field" placeholder="Enter Password" required>
                 <input type="checkbox" class="check-box"><span>Remember Password</span>
-                <button type="submit" class="submit-btn">Login</button>
+                <button type="submit" class="submit-btn">Log In</button>
             </form>
-            <form id="register" class="input-group">
-                <input type="text" class="input-field" placeholder="User ID" required>
-                <input type="text" class="input-field" placeholder="Full Name" required>
-                <input type="text" class="input-field" placeholder="Address" required>
-                <input type="email" class="input-field" placeholder="Email Address" required>
-                <input type="text" class="input-field" placeholder="Enter Password" required>
-                <input type="checkbox" class="check-box"><span>I agree to the terms & conditions</span>
+            <form id="register" class="input-group" action="/createaccount" method="post">
+                <input type="text" name="firstName" id="firstName"  class="input-field" placeholder="First Name" required>
+                <input type="text" name="lastName" id="lastName"  class="input-field" placeholder="Last Name" required>
+                <input type="text" name="address" id="address"  class="input-field" placeholder="Address" required>
+                <input type="email" name="cEmail" id="cEmail"  class="input-field" placeholder="Email Address" required>
+                <input type="text" name="cPassword" id="cPassword" class="input-field" placeholder="Enter Password" required>
+                <input type="checkbox" class="check-box"><span>The new user has agreed to the terms & conditions</span>
                 <button type="submit" class="submit-btn">Register</button>
             </form>
         </div>
@@ -40,15 +40,40 @@
         var y=document.getElementById("register");
         var z=document.getElementById("btn");
 
+        var loggedInUserInfo = {
+            'loggedIn': false,
+            'hasCreatePermission': false
+        };
+
+        function userInfo() {
+            let xhttp = new XMLHttpRequest();
+            xhttp.open("GET", "/permissions/loggedinuserperms");
+            xhttp.responseType = 'json';
+            xhttp.onload  = function() {
+                loggedInUserInfo.hasCreatePermission = this.response.hasCreatePermission;
+                loggedInUserInfo.loggedIn = this.response.loggedIn;
+            };
+            xhttp.send();
+        }
+
+        userInfo();
+
+
         function register(){
-            x.style.left ="-400px";
-            y.style.left ="50px";
-            z.style.left = "110px";
+            if (loggedInUserInfo.hasCreatePermission) {
+                x.style.left = "-400px";
+                y.style.left = "50px";
+                z.style.left = "110px";
+            }
         }
         function login(){
             x.style.left ="50px";
             y.style.left ="450px";
             z.style.left = "0px";
+        }
+
+        function sendHome() {
+            location.href = "/";
         }
     </script>
 </body>

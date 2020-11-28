@@ -20,6 +20,7 @@ function setupRoutes($app) {
 
     $app->get('/users', 'getUsers', true);
     $app->get('/users/{userId}', 'getUsers', true);
+    $app->get('/permissions/loggedinuserperms', 'getLoggedInUserPerms');
 
     $app->get('/createaccount', "Web\\PageRenderers\\renderSignUp");
     $app->post('/createaccount', 'signUp');
@@ -53,8 +54,8 @@ function getUsers(Request $request, $args) {
 }
 
 function signUp(Request $request, $args) {
-    $email = $request->getPostBodyKey("email");
-    $unencryptedPwd = $request->getPostBodyKey("password");
+    $email = $request->getPostBodyKey("cEmail");
+    $unencryptedPwd = $request->getPostBodyKey("cPassword");
     $firstName = $request->getPostBodyKey("firstName");
     $lastName = $request->getPostBodyKey("lastName");
 
@@ -95,6 +96,16 @@ function logOut(Request $request, $args) {
     session_unset();
     session_destroy();
     header('Location: /');
+}
+
+function getLoggedInUserPerms(Request $req, $args) {
+    header('Content-Type: application/json');
+    $resp = ['loggedIn' => false, 'hasCreatePermission' => false];
+
+    if (isset($_SESSION['userId'])) {
+        $resp = DbAPI\checkUserHasCreatePermission($resp, $_SESSION['userId']);
+    }
+    echo json_encode($resp);
 }
 
 
