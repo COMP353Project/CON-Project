@@ -1,1 +1,1 @@
-alter table building add column name text;
+alter table building add column name text not null;
