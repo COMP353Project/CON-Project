@@ -2,12 +2,13 @@
 
 include_once(__DIR__ . "/../App/App.php");
 include_once(__DIR__ . "/../Web/DbAPI.php");
-include_once(__DIR__ . "/../Web/PageRenderers.php");
+include_once(__DIR__ . "/../Web/PageRenderer.php");
 include_once(__DIR__ . "/../Http/Request.php");
 
 use App\App;
 use Http\Request;
 use Web\DbAPI;
+use Web\PageRenderer;
 
 /**
  * Register all the routes for the app
@@ -16,16 +17,16 @@ use Web\DbAPI;
  */
 function setupRoutes($app) {
 
-    $app->get('/', 'Web\\PageRenderers\\renderHomePage');
+    $app->get('/', 'renderHomePage');
 
     $app->get('/users', 'getUsers', true);
     $app->get('/users/{userId}', 'getUsers', true);
     $app->get('/permissions/loggedinuserperms', 'getLoggedInUserPerms');
 
-    $app->get('/createaccount', "Web\\PageRenderers\\renderSignUp");
+    $app->get('/createaccount', "renderSignUp");
     $app->post('/createaccount', 'signUp');
 
-    $app->get('/login', 'Web\\PageRenderers\\renderLogIn');
+    $app->get('/login', 'renderLogIn');
     $app->post('/login', 'logIn');
 
     $app->get("/logout", "logOut");
@@ -108,7 +109,17 @@ function getLoggedInUserPerms(Request $req, $args) {
     echo json_encode($resp);
 }
 
+function renderSignUp(Request $req, $args) {
+    PageRenderer::renderLogIn($req, $args);
+}
 
+function renderHomePage(Request $req, $args) {
+    PageRenderer::renderHomePage($req, $args);
+}
+
+function renderLogIn(Request $req, $args) {
+    PageRenderer::renderLogIn($req, $args);
+}
 
 /* =====================================================================
  *
