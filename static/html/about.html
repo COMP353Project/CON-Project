@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+{%T head %T}
+
+<body>
+    {%T navbar %T}
+
+    <div>
+        <canvas id="stats-chart"></canvas>
+    </div>
+    <script>
+        var chartElem = document.getElementById("stats-chart").getContext('2d');
+        var dataOne = {
+            label: 'Active Condo Associations',
+            data: [28, 48, 40, 19, 86, 27, 90],
+            backgroundColor: [
+                'rgba(0, 137, 132, .2)',
+            ],
+            borderColor: [
+                'rgba(0, 10, 130, .7)',
+            ],
+            borderWidth: 2
+        };
+        var dataTwo = {
+            label: 'Number of Users',
+            data: [65, 59, 80, 81, 56, 55, 40],
+            backgroundColor: [
+                'rgba(105, 0, 132, .2)',
+            ],
+            borderColor: [
+                'rgba(200, 99, 132, .7)',
+            ],
+            borderWidth: 2
+        };
+        var chartLabels = [2014,2015,2016,2017,2018,2019,2020];
+
+        var statsChart = new Chart(
+            chartElem,
+            {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [dataOne, dataTwo]
+                },
+                options: {
+                    response: true
+                }
+            }
+        );
+    </script>
+</body>

@@ -26,6 +26,8 @@ function setupRoutes($app) {
     $app->get('/createaccount', "renderSignUp");
     $app->post('/createaccount', 'signUp');
 
+    $app->get('/ataglance', 'renderAbout');
+
     $app->get('/login', 'renderLogIn');
     $app->post('/login', 'logIn');
 
@@ -119,6 +121,10 @@ function renderHomePage(Request $req, $args) {
 
 function renderLogIn(Request $req, $args) {
     PageRenderer::renderLogIn($req, $args);
+}
+
+function renderAbout(Request $req, $args) {
+    PageRenderer::renderPageForWeb($req, $args, "aboutPage");
 }
 
 /* =====================================================================

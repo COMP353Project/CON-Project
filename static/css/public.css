@@ -41,6 +41,10 @@
     font-weight: 600;
     font-size: 16px;
 }
+
+#dropdown-menu {
+    color: black;
+}
 /*-------Slider--------*/
 #slider{
     width: 100%;

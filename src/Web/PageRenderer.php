@@ -3,14 +3,30 @@
 namespace Web;
 
 use Http\Request;
+use Utils\DB\DB;
+use Utils\DB\DBConn;
 
 class PageRenderer {
 
     private const TEMPLATES = [
-        "navbar" => "static/html/navbar.html",
-        "login" => "static/html/index.html",
-        "homepage" => "static/html/public.html",
-        "head" => "static/html/head.html"
+        "navbar" => [
+            "html" => "static/html/navbar.html"
+        ],
+        "login" => [
+            "html" => "static/html/index.html"
+        ],
+        "homepage" => [
+            "html" => "static/html/public.html"
+        ],
+        "head" => [
+            "html" => "static/html/head.html"]
+        ,
+        "aboutPage" => [
+            "html" => "static/html/about.html",
+            "css" => [
+                "<script src=\"https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js\"></script>"
+            ]
+        ]
     ];
 
     private $targetPage;
@@ -38,6 +54,12 @@ class PageRenderer {
         $renderer->finish();
     }
 
+    static function renderPageForWeb(Request $request, $args, $pageName) {
+        $renderer = new PageRenderer($pageName, $request, $args);
+        $renderer->renderPage();
+        $renderer->finish();
+    }
+
     private function renderPage() {
         $this->targetTemplate = $this->renderTemplate($this->targetPage);
     }
@@ -48,7 +70,7 @@ class PageRenderer {
     }
 
     private function readTemplate($templateName): string {
-        $fileName = __DIR__ . '/../../' . self::TEMPLATES[$templateName];
+        $fileName = __DIR__ . '/../../' . self::TEMPLATES[$templateName]['html'];
         $openTemplate = fopen($fileName, 'r') or die("Webpage unavailable");
         $template = fread($openTemplate, filesize($fileName));
         fclose($openTemplate);
@@ -86,13 +108,71 @@ class PageRenderer {
         echo $this->targetTemplate;
     }
 
+    private function aboutLink() {
+        return ($this->targetPage == 'homepage') ?
+            "location.href='#about'" :
+            "location.href='/ataglance'";
+    }
+
+    private function extraCss(): string {
+        if (in_array('css', array_keys(self::TEMPLATES[$this->targetPage]))) {
+            return implode("\r\n    ", self::TEMPLATES[$this->targetPage]['css']);
+        }
+        return "";
+    }
+
     private function loginOrLogout() {
-        [$route, $label] = (isset($_SESSION['userId'])) ? ["/logout", "LOG OUT"] : ["/login", "LOG IN"];
-        $lastItem = <<<EOD
+        if (!isset($_SESSION['userId'])) {
+            [$route, $label] = ["/login", "LOG IN"];
+            $lastItem = <<<EOD
 <li class="nav-item">
                     <a class="nav-link" href="$route">$label</a>
                 </li>
 EOD;
+        } else {
+            // get user info
+            $sql = <<<EOD
+select 
+       u.firstname, 
+       u.lastname, 
+       r.name 
+from users u
+join user_roles ur
+on u.id = ur.userid
+join roles r 
+on r.id = ur.roleid
+where u.id = :user_id
+EOD;
+
+            /* @var $dbConn DBConn */
+            $dbConn = DB::getInstance()->getConnection();
+            $userInfo = $dbConn->queryWithValues(
+                $sql,
+                [":user_id" => $_SESSION['userId']]
+            );
+            $userName = $userInfo[0]['firstName'] . " " . $userInfo[0]['lastName'];
+            $superUserItem = "";
+            // administrators get extra button in user dropdown
+            if ($userInfo[0]['name'] == "superuser") {
+                $superUserItem = <<<EOD
+<a class="dropdown-item" href="#"><i class="fa fa-database"></i>&nbsp;&nbsp;Administer</a>
+                        
+EOD;
+            }
+            // create item
+            $lastItem = <<<EOD
+<li class="nav-item dropdown">
+                    <a class="btn-floating btn-lg black dropdown-toggle" type="button" id="dropdown-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle"></i></a>
+                    <div class="dropdown-menu dropdown-primary dropdown-menu-right">
+                        <a class="dropdown-item">$userName</a>
+                        <a class="dropdown-item" href="#"><i class="fa fa-user-secret"></i>&nbsp;&nbsp;Your Page</a>
+                        $superUserItem<a class="dropdown-item" href="#"><i class="fa fa-envelope"></i>&nbsp;&nbsp;Check mail</a>
+                        <a class="dropdown-item" href="/logout"><i class="fa fa-user-times"></i>&nbsp;&nbsp;Log Out</a>
+                    </div>
+                </li>
+EOD;
+
+        }
         return $lastItem;
     }
 }
