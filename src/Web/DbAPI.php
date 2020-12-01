@@ -63,6 +63,40 @@ function addUserToDB($email, $unencryptedPwd, $firstName, $lastName) {
     }
 }
 
+function bulkAddUsersToDb($userList) {
+    $params = [];
+    $valuesStr = [];
+    $add = function($param) use (&$valuesStr, &$params) {
+        static $placeholders = [];
+        $placeholder = ":param" . (sizeof($params) + 1);
+        $params[$placeholder] = $param;
+        $placeholders[] = $placeholder;
+        if (sizeof($placeholders) % 4 == 0) {
+            $valuesStr[] = '(' . implode(', ', $placeholders) . ")";
+            $placeholders = [];
+        }
+    };
+
+    foreach ($userList as $newUser) {
+        foreach ($newUser as $field => $value) {
+            if ($field == "pwd") {
+                $value = password_hash($value, PASSWORD_DEFAULT);
+            }
+            $add($value);
+        }
+    }
+
+    $insertSql = "insert into users (firstname, lastname, email, password) values " . implode(", ", $valuesStr) . ";";
+    $dbConn = DB::getInstance()->getConnection();
+    try {
+        $dbConn->queryWithValues($insertSql, $params);
+        echo "Batch create success!";
+    }
+    catch (\PDOException $e) {
+        echo "Batch create failed";
+    }
+}
+
 function logInUser($email, $unencryptedPwd) {
 
     if (checkUserExists($email)) {
@@ -119,6 +153,36 @@ EOD;
     }
 
     return $resp;
+}
+
+function yoyParticipation($type) {
+
+    if ($type == 'associations') {
+        //
+        $table = "condo_association";
+        $where = "WHERE id <> 1";
+    } else {
+        // users
+        $table = "users";
+        $where = "WHERE isactive and id not in (select userid from user_roles where roleid = 1)";
+    }
+    $sql = <<<EOD
+with by_year as (
+    select 
+    YEAR(createdon) as year,
+    count(*) as num 
+    from $table
+    $where
+    group by 1
+)
+select year,
+sum(num) over (order by by_year.year) as active
+from by_year
+EOD;
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($sql, []);
+    header('Content-type: application/json');
+    echo json_encode($res);
 }
 
 /* =====================================================================

@@ -26,6 +26,12 @@ class PageRenderer {
             "css" => [
                 "<script src=\"https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js\"></script>"
             ]
+        ],
+        "profilePage" => [
+            "html" => "static/html/profile.html",
+            "css" => [
+                "<link rel=\"stylesheet\" href=\"/css/profile.css\">"
+            ]
         ]
     ];
 
@@ -165,7 +171,7 @@ EOD;
                     <a class="btn-floating btn-lg black dropdown-toggle" type="button" id="dropdown-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle"></i></a>
                     <div class="dropdown-menu dropdown-primary dropdown-menu-right">
                         <a class="dropdown-item">$userName</a>
-                        <a class="dropdown-item" href="#"><i class="fa fa-user-secret"></i>&nbsp;&nbsp;Your Page</a>
+                        <a class="dropdown-item" href="/profile"><i class="fa fa-user-secret"></i>&nbsp;&nbsp;Your Page</a>
                         $superUserItem<a class="dropdown-item" href="#"><i class="fa fa-envelope"></i>&nbsp;&nbsp;Check mail</a>
                         <a class="dropdown-item" href="/logout"><i class="fa fa-user-times"></i>&nbsp;&nbsp;Log Out</a>
                     </div>
@@ -174,6 +180,13 @@ EOD;
 
         }
         return $lastItem;
+    }
+
+    private function getUserName() : string {
+        $sql = "select firstname, lastname from users where id = :userid";
+        $dbConn = DB::getInstance()->getConnection();
+        $userInfo = $dbConn->queryWithValues($sql, [":userid" => $_SESSION['userId']]);
+        return $userInfo[0]['firstName'] . " " . $userInfo[0]['lastName'];
     }
 }
 

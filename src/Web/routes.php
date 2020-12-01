@@ -19,14 +19,19 @@ function setupRoutes($app) {
 
     $app->get('/', 'renderHomePage');
 
+    $app->get('/profile', 'renderProfile', true);
+
     $app->get('/users', 'getUsers', true);
     $app->get('/users/{userId}', 'getUsers', true);
+    $app->post('/users/bulk/create', 'bulkInsertUsers');
+
     $app->get('/permissions/loggedinuserperms', 'getLoggedInUserPerms');
 
     $app->get('/createaccount', "renderSignUp");
     $app->post('/createaccount', 'signUp');
 
     $app->get('/ataglance', 'renderAbout');
+    $app->get('/ataglance/yearoveryear/{type}', 'queryForAtAGlance');
 
     $app->get('/login', 'renderLogIn');
     $app->post('/login', 'logIn');
@@ -125,6 +130,19 @@ function renderLogIn(Request $req, $args) {
 
 function renderAbout(Request $req, $args) {
     PageRenderer::renderPageForWeb($req, $args, "aboutPage");
+}
+
+function renderProfile(Request $req, $args) {
+    PageRenderer::renderPageForWeb($req, $args, 'profilePage');
+}
+
+function bulkInsertUsers(Request $req, $args) {
+    $newUserList = $req->getPostBodyKey('newUsers');
+    DbAPI\bulkAddUsersToDb($newUserList);
+}
+
+function queryForAtAGlance(Request $req, $args) {
+    DbAPI\yoyParticipation($args['type']);
 }
 
 /* =====================================================================

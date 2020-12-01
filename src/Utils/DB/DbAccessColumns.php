@@ -68,6 +68,14 @@ class DbAccessColumns {
         "roleid" => [
             "type" => "string",
             "name" => "roleId"
+        ],
+        "year" => [
+            "type" => "int",
+            "name" => "year"
+        ],
+        "active" => [
+            "type" => "int",
+            "name" => "active"
         ]
     ];
 }
