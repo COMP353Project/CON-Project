@@ -1,3 +1,4 @@
+-- run after db_mod.5
 insert into building
 (name, address, datebuilt, associationid)
 values

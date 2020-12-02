@@ -1,3 +1,4 @@
+-- run after db_mod.5
 update condo_unit
 set ownerid = (
     CASE id

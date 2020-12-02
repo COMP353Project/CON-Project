@@ -76,6 +76,30 @@ class DbAccessColumns {
         "active" => [
             "type" => "int",
             "name" => "active"
+        ],
+        "associations" => [
+            "type" => "string",
+            "name" => "associations"
+        ],
+        "roles" => [
+            "type" => "string",
+            "name" => "roles"
+        ],
+        "numcondos" => [
+            "type" => "int",
+            "name" => "numCondos"
+        ],
+        "nummembers" => [
+            "type" => "int",
+            "name" => "numMembers",
+        ],
+        "numadmins" => [
+            "type" => "int",
+            "name" => "numAdmins"
+        ],
+        "description" => [
+            "type" => "string",
+            "name" => "description"
         ]
     ];
 }

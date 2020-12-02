@@ -185,6 +185,35 @@ EOD;
     echo json_encode($res);
 }
 
+function getGroupNames() {
+    /* @var $dbConn DBConn */
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->query("select name from con_group");
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function createNewGroup($name, $description) {
+    // create group
+    $sql = "insert into con_group (name, description) values (:name, :description);";
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($sql, [":name" => $name, ":description" => $description]);
+    $sql = "select id from con_group where name = :name;";
+    $newId = $dbConn->queryWithValues($sql, [":name" => $name])[0]['id'];
+    // create user role for group as admin
+    $sql = "insert into group_membership (userid, groupid, roleid) values (:userid, :groupid, 2);";
+    $res = $dbConn->queryWithValues($sql, [":userid" => $_SESSION['userId'], ":groupid" => $newId]);
+    echo "OK";
+}
+
+function getGroupsById() {
+    $sql = "select cg.id, cg.name from con_group cg join group_membership gm on cg.id = gm.groupid where gm.userid = :userid;";
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($sql, [":userid" => $_SESSION['userId']]);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
 /* =====================================================================
  *
  * HELPERS

@@ -20,10 +20,16 @@ function setupRoutes($app) {
     $app->get('/', 'renderHomePage');
 
     $app->get('/profile', 'renderProfile', true);
+    $app->get('/administer', 'renderAdminister', true);
 
     $app->get('/users', 'getUsers', true);
     $app->get('/users/{userId}', 'getUsers', true);
     $app->post('/users/bulk/create', 'bulkInsertUsers');
+
+    $app->get('/groups/{id}', 'renderGroupPage', true);
+    $app->get('/groups/search/groupnames', 'getGroupNames', true);
+    $app->get('/groups/search/byid', 'getGroupsById', true);
+    $app->post('/groups/add/byname', 'createNewGroup', true);
 
     $app->get('/permissions/loggedinuserperms', 'getLoggedInUserPerms');
 
@@ -136,6 +142,14 @@ function renderProfile(Request $req, $args) {
     PageRenderer::renderPageForWeb($req, $args, 'profilePage');
 }
 
+function renderAdminister(Request $req, $args) {
+    PageRenderer::renderPageForWeb($req, $args, 'administerPage');
+}
+
+function renderGroupPage(Request $req, $args) {
+    PageRenderer::renderPageForWeb($req, $args, 'groupPage');
+}
+
 function bulkInsertUsers(Request $req, $args) {
     $newUserList = $req->getPostBodyKey('newUsers');
     DbAPI\bulkAddUsersToDb($newUserList);
@@ -143,6 +157,18 @@ function bulkInsertUsers(Request $req, $args) {
 
 function queryForAtAGlance(Request $req, $args) {
     DbAPI\yoyParticipation($args['type']);
+}
+
+function getGroupNames(Request $req, $args) {
+    DbAPI\getGroupNames();
+}
+
+function createNewGroup(Request $req, $args) {
+    DbAPI\createNewGroup($req->getPostBodyKey('name'), $req->getPostBodyKey('description'));
+}
+
+function getGroupsById() {
+    DbAPI\getGroupsById();
 }
 
 /* =====================================================================

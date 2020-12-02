@@ -32,6 +32,18 @@ class PageRenderer {
             "css" => [
                 "<link rel=\"stylesheet\" href=\"/css/profile.css\">"
             ]
+        ],
+        "administerPage" => [
+            "html" => "static/html/administer.html",
+            "css" => [
+                "<link rel=\"stylesheet\" href=\"/css/administer.css\">"
+            ]
+        ],
+        "groupPage" => [
+            "html" => "static/html/group.html",
+            "css" => [
+                "<link rel=\"stylesheet\" href=\"/css/group.css\">"
+            ]
         ]
     ];
 
@@ -39,11 +51,14 @@ class PageRenderer {
     private $requestContext;
     private $requestArgs;
     private $targetTemplate;
+    /* @var $dbConn DBConn */
+    private $dbConn;
 
     public function __construct($pageName, Request $requestContext, $args) {
         $this->targetPage = $pageName;
         $this->requestContext = $requestContext;
         $this->requestArgs = $args;
+        $this->dbConn = DB::getInstance()->getConnection();
     }
 
     static function renderHomePage(Request $request, $args) {
@@ -150,9 +165,7 @@ on r.id = ur.roleid
 where u.id = :user_id
 EOD;
 
-            /* @var $dbConn DBConn */
-            $dbConn = DB::getInstance()->getConnection();
-            $userInfo = $dbConn->queryWithValues(
+            $userInfo = $this->dbConn->queryWithValues(
                 $sql,
                 [":user_id" => $_SESSION['userId']]
             );
@@ -161,7 +174,7 @@ EOD;
             // administrators get extra button in user dropdown
             if ($userInfo[0]['name'] == "superuser") {
                 $superUserItem = <<<EOD
-<a class="dropdown-item" href="#"><i class="fa fa-database"></i>&nbsp;&nbsp;Administer</a>
+<a class="dropdown-item" href="/administer"><i class="fa fa-database"></i>&nbsp;&nbsp;Administer</a>
                         
 EOD;
             }
@@ -184,9 +197,173 @@ EOD;
 
     private function getUserName() : string {
         $sql = "select firstname, lastname from users where id = :userid";
-        $dbConn = DB::getInstance()->getConnection();
-        $userInfo = $dbConn->queryWithValues($sql, [":userid" => $_SESSION['userId']]);
+        $userInfo = $this->dbConn->queryWithValues($sql, [":userid" => $_SESSION['userId']]);
         return $userInfo[0]['firstName'] . " " . $userInfo[0]['lastName'];
+    }
+
+    private function getUserInfoForProfile() : string {
+        $item = "%FIELD - %VALUE";
+        $sql = <<<EOD
+with association_info as (
+	select ur.userid,
+	assoc.name as assoc_name,
+	r.name as r_name
+	from user_roles ur
+	join condo_association assoc on ur.associationid = assoc.id
+	join roles r on ur.roleid = r.id
+	where ur.userid = :user_id
+)
+select
+u.createdon,
+group_concat(ai.assoc_name) as associations,
+group_concat(ai.r_name) as roles,
+(select count(*) from condo_unit cu where cu.ownerid = :user_id) as numcondos
+from users u
+join association_info ai on u.id = ai.userid
+where u.id = :user_id
+group by u.id
+EOD;
+        $userInfo = $this->dbConn->queryWithValues($sql, [":user_id" => $_SESSION['userId']]);
+
+        $userHtml = [];
+        foreach ($userInfo[0] as $field => $value) {
+            if (in_array($field, ['associations', 'roles'])) {
+                $value = explode(",", $value);
+                if ($field == 'roles') {
+                    $value = array_unique($value);
+                }
+                $value = implode(", ", $value);
+            }
+            $newHtml = str_replace("%FIELD", $field, $item);
+            $userHtml[] = str_replace("%VALUE", $value, $newHtml);
+        }
+        return implode("<br>", $userHtml);
+    }
+
+    private function getUserGroups(): string {
+        $sql = <<<EOD
+select cg.id, cg.name 
+from group_membership gm
+join con_group cg on gm.groupid = cg.id 
+where gm.userid = :user_id
+EOD;
+        $userGroups = $this->dbConn->queryWithValues($sql, [":user_id" => $_SESSION['userId']]);
+        $html = <<<EOD
+<table class="table table-striped" id="group-name-table">
+    <thead>
+        <th scope="col">
+            <a onclick="createGroupPopUp()">
+                <i class="fa fa-edit"></i>
+            </a>
+            <div class="tooltip">
+                <span class="tooltiptext">Create group</span>
+            </div>
+        </th>
+        <th scope="col">Your Groups</th>
+    </thead>
+    <tbody>
+        %TABLE%
+    </tbody>
+</table>
+EOD;
+        $groupBase = "<tr><th scope=\"row\">%ID%</th><th><a %REF%>%GROUP_NAME%</a></th></tr>";
+        $counter = 1;
+        if (sizeof($userGroups) == 0) {
+
+            $groupHtml = str_replace("%GROUP_NAME%", "No groups to display", $groupBase);
+            $groupHtml = str_replace("%ID%", $counter, $groupHtml);
+            $groupHtml = str_replace("%REF%", "", $groupHtml);
+        } else {
+            $groupHtml = "";
+            foreach($userGroups as $userGroup) {
+                $interm = str_replace("%GROUP_NAME%", $userGroup['name'], $groupBase);
+                $interm = str_replace("%ID%", $counter, $interm);
+                $groupHtml .= str_replace("%REF%", "href=\"/groups/{$userGroup['id']}\"", $interm);
+                $counter++;
+            }
+        }
+
+        return str_replace("%TABLE%", $groupHtml, $html);
+    }
+
+    private function getGroupName() : string {
+        $res = $this->dbConn->queryWithValues(
+            "select name from con_group where id = :group_id",
+            [":group_id" => $this->requestArgs['id']]
+        );
+
+        if (sizeof($res) == 0) {
+            return "Invalid GROUP ID";
+        } else {
+            return $res[0]['name'];
+        }
+    }
+
+    private function getGroupInfoForDisplay(): string {
+        $item = "%FIELD - %VALUE";
+        $sql = <<<EOD
+with membership as (
+	select roleid, count(*) as num_users
+	from group_membership
+	where groupid = :groupid
+	group by roleid
+)
+select
+description,
+createdon,
+coalesce((select num_users from membership where roleid = 1),0) as nummembers,
+coalesce((select num_users from membership where roleid = 2),0) as numadmins
+from con_group
+where id = :groupid
+EOD;
+        $res = $this->dbConn->queryWithValues($sql, [":groupid" => $this->requestArgs['id']]);
+        $groupHtml = [];
+        foreach ($res[0] as $field => $value) {
+            $newHtml = str_replace("%FIELD", $field, $item);
+            $groupHtml[] = str_replace("%VALUE", $value, $newHtml);
+        }
+
+        return implode("<br>", $groupHtml);
+    }
+
+    private function getGroupAdmins(): string {
+        return $this->getGroupMembersByRole("ADMINS", 2);
+    }
+
+    private function getGroupMembers(): string {
+        return $this->getGroupMembersByRole("MEMBERS", 1);
+    }
+
+    private function getGroupMembersByRole($roleName, $roleId): string {
+        $sql = <<<EOD
+select u.firstname, u.lastname
+from users u 
+join group_membership g on u.id = g.userid
+where g.groupid = :groupid and g.roleid = :roleid
+EOD;
+        $res = $this->dbConn->queryWithValues($sql, [
+            ":groupid" => $this->requestArgs['id'],
+            ":roleid" => $roleId
+        ]);
+
+        $listHtml = "<ul class=\"list-group\">" .
+            "    <li class=\"list-group-item d-flex justify-content-between align-items-center disabled\">
+                 {$roleName}
+                 <span><i class=\"fa fa-cogs\"></i>&nbsp;&nbsp;</span>
+                 </li>" .
+            "    %LISTITEMS%" .
+            "</ul>";
+        if (sizeof($res) > 0) {
+            $listItems = [];
+            foreach ($res as $member) {
+                $listItems[] = "    <li class=\"list-group-item d-flex justify-content-between align-items-center\">{$member['firstName']} {$member['lastName']}</li>";
+            }
+            $listItems = implode("", $listItems);
+        } else {
+            $listItems = "    <li class=\"list-group-item d-flex justify-content-between align-items-center\">No " . strtolower($roleName) . "</li>";
+        }
+
+        return str_replace("%LISTITEMS%", $listItems, $listHtml);
     }
 }
 

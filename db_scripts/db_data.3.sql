@@ -1,3 +1,4 @@
+-- run after db_mod.5
 insert into condo_unit
 (floor, door, buildingid)
 values
