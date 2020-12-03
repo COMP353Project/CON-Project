@@ -147,11 +147,11 @@ class PageRenderer {
         echo $this->targetTemplate;
     }
 
-    private function bootstrapDist() {
-        if (in_array('bootstrapDist', array_keys(self::TEMPLATES[$this->targetPage]))) {
-            return implode("\r\n    ", self::TEMPLATES[$this->targetPage]['bootstrapDist']);
-        }
-        return "";
+    private function chooseOrderOfJS(): string {
+        $defaultFirst = "<script src=\"https://code.jquery.com/jquery-3.5.1.slim.min.js\" integrity=\"sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj\" crossorigin=\"anonymous\"></script>";
+        $defaultSecond = "<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx\" crossorigin=\"anonymous\"></script>";
+
+        return implode("\r\n    ", (($this->targetPage != 'administerPage') ? [$defaultFirst, $defaultSecond] : [$defaultSecond, $defaultFirst]));
     }
 
     private function extraStyle() {
