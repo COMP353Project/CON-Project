@@ -35,8 +35,29 @@ class PageRenderer {
         ],
         "administerPage" => [
             "html" => "static/html/administer.html",
+            "bootstrapDist" => [
+                "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css\" integrity=\"sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T\" crossorigin=\"anonymous\">"
+            ],
             "css" => [
                 "<link rel=\"stylesheet\" href=\"/css/administer.css\">"
+            ],
+            "extraStyle" => [
+                "<style>
+                  .bd-placeholder-img {
+                    font-size: 1.125rem;
+                    text-anchor: middle;
+                    -webkit-user-select: none;
+                    -moz-user-select: none;
+                    -ms-user-select: none;
+                    user-select: none;
+                  }
+            
+                  @media (min-width: 768px) {
+                    .bd-placeholder-img-lg {
+                      font-size: 3.5rem;
+                    }
+                  }
+                </style>"
             ]
         ],
         "groupPage" => [
@@ -127,6 +148,20 @@ class PageRenderer {
     private function finish() {
         header('Content-Type: text/html');
         echo $this->targetTemplate;
+    }
+
+    private function bootstrapDist() {
+        if (in_array('bootstrapDist', array_keys(self::TEMPLATES[$this->targetPage]))) {
+            return implode("\r\n    ", self::TEMPLATES[$this->targetPage]['bootstrapDist']);
+        }
+        return "";
+    }
+
+    private function extraStyle() {
+        if (in_array('extraStyle', array_keys(self::TEMPLATES[$this->targetPage]))) {
+            return implode("\r\n    ", self::TEMPLATES[$this->targetPage]['extraStyle']);
+        }
+        return "";
     }
 
     private function aboutLink() {

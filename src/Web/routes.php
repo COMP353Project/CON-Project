@@ -47,6 +47,7 @@ function setupRoutes($app) {
     $app->get("/images/{imageName}", "renderImage");
     $app->get("/icons2/{iconName}", "renderIcon");
     $app->get("/css/{styleSheet}", "renderStylesheet");
+    $app->get('/js/{javaScript}', 'renderJavaScript');
 
     $app->get("/route/{withVar}/for/testing", function(Request $request, $args) {echo 'IT WORKED';}, true);
 
@@ -96,9 +97,14 @@ function renderStylesheet(Request $request, $args) {
     renderStatic("/../../static/css/", $args['styleSheet'], 'text/');
 }
 
-function renderStatic($path, $name, $baseType) {
+function renderJavaScript(Request $req, $args) {
+    renderStatic("/../../static/js/", $args['javaScript'], 'application/', 'javascript');
+}
+
+function renderStatic($path, $name, $baseType, $overrideExtension = null) {
+    $extensionType = (is_null($overrideExtension)) ? explode(".", $name)[1] : $overrideExtension;
     header_remove("Content-Length");
-    header("Content-type: {$baseType}" . explode(".", $name)[1]);
+    header("Content-type: {$baseType}" . $extensionType);
     include  __DIR__ . $path . $name;
 }
 
