@@ -8,6 +8,23 @@ use Utils\DB\DBConn;
 
 class PageRenderer {
 
+    private const EXTRA_STYLE = "<style>
+                  .bd-placeholder-img {
+                    font-size: 1.125rem;
+                    text-anchor: middle;
+                    -webkit-user-select: none;
+                    -moz-user-select: none;
+                    -ms-user-select: none;
+                    user-select: none;
+                  }
+            
+                  @media (min-width: 768px) {
+                    .bd-placeholder-img-lg {
+                      font-size: 3.5rem;
+                    }
+                  }
+                </style>";
+
     private const TEMPLATES = [
         "navbar" => [
             "html" => "static/html/navbar.html"
@@ -30,7 +47,11 @@ class PageRenderer {
         "profilePage" => [
             "html" => "static/html/profile.html",
             "css" => [
-                "<link rel=\"stylesheet\" href=\"/css/profile.css\">"
+                "<link rel=\"stylesheet\" href=\"/css/profile.css\">",
+                "<link rel=\"stylesheet\" href=\"/css/posts.css\">"
+            ],
+            "extraStyle" => [
+                self::EXTRA_STYLE
             ]
         ],
         "administerPage" => [
@@ -39,28 +60,23 @@ class PageRenderer {
                 "<link rel=\"stylesheet\" href=\"/css/administer.css\">"
             ],
             "extraStyle" => [
-                "<style>
-                  .bd-placeholder-img {
-                    font-size: 1.125rem;
-                    text-anchor: middle;
-                    -webkit-user-select: none;
-                    -moz-user-select: none;
-                    -ms-user-select: none;
-                    user-select: none;
-                  }
-            
-                  @media (min-width: 768px) {
-                    .bd-placeholder-img-lg {
-                      font-size: 3.5rem;
-                    }
-                  }
-                </style>"
+                self::EXTRA_STYLE
             ]
         ],
         "groupPage" => [
             "html" => "static/html/group.html",
             "css" => [
-                "<link rel=\"stylesheet\" href=\"/css/group.css\">"
+                "<link rel=\"stylesheet\" href=\"/css/group.css\">",
+                "<link rel=\"stylesheet\" href=\"/css/posts.css\">"
+            ]
+        ],
+        "postsContainer" => [
+            "html" => "static/html/postsContainer.html",
+            "css" => [
+                "<link rel=\"stylesheet\" href=\"/css/posts.css\">"
+            ],
+            "js" => [
+                "<script src=\"/js/posts.js\"></script>"
             ]
         ]
     ];
@@ -71,12 +87,16 @@ class PageRenderer {
     private $targetTemplate;
     /* @var $dbConn DBConn */
     private $dbConn;
+    private $currentTemplate;
+    private $scripts;
 
     public function __construct($pageName, Request $requestContext, $args) {
         $this->targetPage = $pageName;
         $this->requestContext = $requestContext;
         $this->requestArgs = $args;
         $this->dbConn = DB::getInstance()->getConnection();
+        $this->currentTemplate = null;
+        $this->scripts = [];
     }
 
     static function renderHomePage(Request $request, $args) {
@@ -104,6 +124,7 @@ class PageRenderer {
     }
 
     private function renderTemplate($templateName): string {
+        $this->currentTemplate = $templateName;
         $template = $this->readTemplate($templateName);
         return $this->buildTemplate($template);
     }
@@ -137,6 +158,10 @@ class PageRenderer {
             // reset
             $templateMatches = [];
             $functionMatches = [];
+        }
+
+        if ($this->currentTemplate != $this->targetPage && array_key_exists('js', self::TEMPLATES[$this->currentTemplate])) {
+            $this->scripts = array_merge($this->scripts, self::TEMPLATES[$this->currentTemplate]['js']);
         }
 
         return $template;
@@ -396,6 +421,10 @@ EOD;
         }
 
         return str_replace("%LISTITEMS%", $listItems, $listHtml);
+    }
+
+    private function includeScripts() {
+        return implode("\r\n    ", $this->scripts);
     }
 }
 

@@ -30,7 +30,7 @@ function setupRoutes($app) {
 
 
     $app->get('/groups/{id}', 'renderGroupPage', true);
-    $app->get('/groups/search/groupnames', 'getGroupNames', true);
+    $app->get('/groups/search/groupnames', 'getGroupNames');
     $app->get('/groups/search/byid', 'getGroupsById', true);
     $app->post('/groups/add/byname', 'createNewGroup', true);
     $app->get("/groups/{groupId}/posts", "getGroupPosts", true);
