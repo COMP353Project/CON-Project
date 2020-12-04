@@ -40,10 +40,7 @@ class DBConn {
     }
 
     public function query(string $sql) {
-        /* @var $statement PDOStatement */
-        $statement = $this->conn->prepare($sql);
-        $statement->execute();
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
+        return $this->queryWithValues($sql, []);
     }
 
     public function queryWithValues(string $sql, array $values, array $oneOffMap = []) {
