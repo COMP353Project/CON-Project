@@ -100,6 +100,10 @@ class DbAccessColumns {
         "description" => [
             "type" => "string",
             "name" => "description"
+        ],
+        "groupid" => [
+            "type" => "string",
+            "name" => "groupId"
         ]
     ];
 }

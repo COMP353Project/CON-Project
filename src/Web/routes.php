@@ -25,6 +25,8 @@ function setupRoutes($app) {
     $app->get('/users', 'getUsers', true);
     $app->get('/users/{userId}', 'getUsers', true);
     $app->post('/users/bulk/create', 'bulkInsertUsers');
+    $app->get('/users/{userId}/connections', 'getUserConnections', true);
+    $app->get('/users/{userId}/posts/allvisible', 'getPostsVisibleToUser', true);
 
     $app->get('/groups/{id}', 'renderGroupPage', true);
     $app->get('/groups/search/groupnames', 'getGroupNames', true);
@@ -65,7 +67,21 @@ function getUsers(Request $request, $args) {
    $userIds =  (isset($args['userId'])) ?
             $args['userId'] :
             $request->getQueryParam('userid', []);
-    DbApi\getUsersFromDB($userIds);
+    $res = DbApi\getUsersFromDB($userIds);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getUserConnections(Request $req, $args) {
+    $res = DbAPI\getUserConnections($args['userId']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getPostsVisibleToUser(Request $req, $args) {
+    $res = DbAPI\getPosts([$args['userId']], null, null);
+    header('Content-type: application/json');
+    echo json_encode($res);
 }
 
 function signUp(Request $request, $args) {
@@ -162,11 +178,15 @@ function bulkInsertUsers(Request $req, $args) {
 }
 
 function queryForAtAGlance(Request $req, $args) {
-    DbAPI\yoyParticipation($args['type']);
+    $res = DbAPI\yoyParticipation($args['type']);
+    header('Content-type: application/json');
+    echo json_encode($res);
 }
 
 function getGroupNames(Request $req, $args) {
-    DbAPI\getGroupNames();
+    $res = DbAPI\getGroupNames();
+    header('Content-type: application/json');
+    echo json_encode($res);
 }
 
 function createNewGroup(Request $req, $args) {
@@ -174,7 +194,9 @@ function createNewGroup(Request $req, $args) {
 }
 
 function getGroupsById() {
-    DbAPI\getGroupsById();
+    $res = DbAPI\getGroupsById();
+    header('Content-type: application/json');
+    echo json_encode($res);
 }
 
 /* =====================================================================

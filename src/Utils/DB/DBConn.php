@@ -61,7 +61,9 @@ class DBConn {
                     if ($map[$key]["type"] != "string") {
                         // DO THE CAST
                         // TODO deal with NULL probably
-                        settype($value, $map[$key]["type"]);
+                        if (!is_null($value)) {
+                            settype($value, $map[$key]["type"]);
+                        }
                     }
                     $key = (isset($map[$key]['name'])) ? $map[$key]['name'] : $key;
                     $mappedRow[$key] = $value;

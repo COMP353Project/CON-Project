@@ -39,7 +39,99 @@ function getUsersFromDB($userIds) {
     $dbConn = DB::getInstance()->getConnection();
     $res = $dbConn->queryWithValues($usersSQL, $parametrizedIds);
 
-    echo json_encode($res);
+    return $res;
+}
+
+function getPosts($userId, $groupId, $associationId) {
+    // if user is specified, request is coming from user profile page
+    //  --> get all posts the user can see
+    // if group is specified, request is coming from group page
+    //  --> get all posts in a group
+    // if association is specified, request is coming from association page
+    //  --> get all posts by users in an association
+    if (!is_null($userId)) {
+        $whereSql = "(
+	        p.group_id in (select distinct groupid from group_membership where userid = :userid)
+	        or
+	        ur.associationid in (select distinct associationid from user_roles where userid = :userid)
+        )";
+        $params = [":userid" => $userId];
+    } elseif (!is_null($groupId)) {
+        $whereSql = "p.group_id = :group_id";
+        $params = [":group_id" => $groupId];
+    } else {
+        $whereSql = "ur.associationid = :associationid";
+        $params = [":asociationid" => $associationId];
+    }
+    $sql = <<<EOD
+select 
+p.post_id, p.user_id, 
+u.firstname, u.lastname, g.name as groupname, 
+p.contents, p.is_commentable, p.tstamp,
+(select count(*) as numcomments from Comments where post_id = p.post_id) as numcomments
+from Posts p
+join users u on p.user_id = u.id
+left join con_group g on p.group_id = g.id
+join user_roles ur on p.user_id = ur.userid
+where {$whereSql}
+order by p.tstamp
+EOD;
+
+
+}
+
+function getUserConnections($userId) {
+    $connections = [
+        'allUsers' => [],
+        'usersByGroup' => [],
+        'usersByAssociation' => [],
+        'admins' => []
+    ];
+
+    $connectionSql = <<<EOD
+select u.id as userid, NULL as groupid, ur.associationid 
+from user_roles ur
+join users u on ur.userid = u.id
+where ur.associationid in (select associationid from user_roles where userid = :userid) or ur.associationid = 1
+union all
+select u.id as userid, gm.groupid, NULL as associationid
+from group_membership gm
+join users u on gm.userid = u.id
+where gm.groupid in (select groupid from group_membership where userid = :userid)
+EOD;
+
+    /* @var $dbConn DBConn */
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($connectionSql, [":userid" => $userId]);
+
+    foreach($res as $connection) {
+        if (!in_array($connection['userId'], $connections['allUsers'])) {
+            $connections['allUsers'][] = $connection['userId'];
+        }
+        if (!is_null($connection['associationId'])) {
+            if ($connection['associationId'] != '1') {
+                if (!array_key_exists($connection['associationId'], $connections['usersByAssociation'])) {
+                    $connections['usersByAssociation'][$connection['associationId']] = [];
+                }
+                if (!in_array($connection['userId'], $connections['usersByAssociation'][$connection['associationId']])) {
+                    $connections['usersByAssociation'][$connection['associationId']][] = $connection['userId'];
+                }
+            } elseif (!in_array($connection['userId'], $connections['admins'])) {
+                $connections['admins'][] = $connection['userId'];
+            }
+        }
+        
+        if (!is_null($connection['groupId'])) {
+            if (!array_key_exists($connection['groupId'], $connections['usersByGroup'])) {
+                $connections['usersByGroup'][$connection['groupId']] = [];
+            }
+            if (!in_array($connection['userId'], $connections['usersByGroup'][$connection['groupId']])) {
+                $connections['usersByGroup'][$connection['groupId']][] = $connection['userId'];
+            }
+        }
+    }
+
+    return $connections;
 }
 
 function addUserToDB($email, $unencryptedPwd, $firstName, $lastName) {
@@ -181,16 +273,14 @@ from by_year
 EOD;
     $dbConn = DB::getInstance()->getConnection();
     $res = $dbConn->queryWithValues($sql, []);
-    header('Content-type: application/json');
-    echo json_encode($res);
+    return $res;
 }
 
 function getGroupNames() {
     /* @var $dbConn DBConn */
     $dbConn = DB::getInstance()->getConnection();
     $res = $dbConn->query("select name from con_group");
-    header('Content-type: application/json');
-    echo json_encode($res);
+    return $res;
 }
 
 function createNewGroup($name, $description) {
@@ -210,8 +300,7 @@ function getGroupsById() {
     $sql = "select cg.id, cg.name from con_group cg join group_membership gm on cg.id = gm.groupid where gm.userid = :userid;";
     $dbConn = DB::getInstance()->getConnection();
     $res = $dbConn->queryWithValues($sql, [":userid" => $_SESSION['userId']]);
-    header('Content-type: application/json');
-    echo json_encode($res);
+    return $res;
 }
 
 /* =====================================================================
