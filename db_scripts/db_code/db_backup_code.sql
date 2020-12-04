@@ -89,13 +89,15 @@ DROP TABLE Posts;
 CREATE TABLE Posts(
         post_id int NOT NULL,
         user_id int NOT NULL,
+        group_id int NOT NULL,
         posts_accessabilities_code varchar(3),
         posts_permissions_code varchar(3),
-        contents TINYTEXT,
-        contains_image BOOLEAN,
-        tstamp, timestamp,
+        contents TEXT,
+        is_commentable BOOLEAN,
+        tstamp timestamp,
         PRIMARY KEY (post_id),
         FOREIGN KEY (user_id) REFERENCES Users1(user_id),
+        FOREIGN KEY (group_id) REFERENCES con_group(id),
         FOREIGN KEY (posts_accessabilities_code) REFERENCES PostsAccessabilities(posts_accessabilities_code),
         FOREIGN KEY (posts_permissions_code) REFERENCES PostsPermissions(posts_permissions_code));
 
@@ -148,3 +150,41 @@ CREATE TABLE Votes(
         PRIMARY KEY (option_id, user_id),
         FOREIGN KEY (option_id) REFERENCES Options(option_id),
         FOREIGN KEY (user_id) REFERENCES Users1(user_id));
+
+DROP TABLE Parkings;
+CREATE TABLE Parkings(
+        parking_id INT NOT NULL,
+        condo_unit_id INT NOT NULL,
+        typle varchar(20),
+        PRIMARY KEY (parking_id),
+        FOREIGN KEY (condo_unit_id) REFERENCES condo_unit(id));
+
+DROP TALBE Storages;
+CREATE TABLE Storages(
+        storage_id INT NOT NULL,
+        condo_unit_id INT NOT NULL,
+        typle varchar(20),
+        floor int,
+        PRIMARY KEY (storage_id),
+        FOREIGN KEY (condo_unit_id) REFERENCES condo_unit(id));
+
+DROP TABLE Maintenance;
+CREATE TABLE Maintenance(
+        maintenance_id INT NOT NULL AUTO_INCREMENT,
+        name VARCHAR(255) NOT NULL,
+        contractor VARCHAR(255),
+        PRIMARY KEY (maintenance_id));
+
+DROP TABLE Transactions;
+CREATE TABLE Transactions(
+        transaction_id INT NOT NULL AUTO_INCREMENT,
+        buyer_user_id INT NOT NULL,
+        seller_user_id  INT NOT NULL,
+        condo_unit_id INT NOT NULL,
+        tstamp TIMESTAMP,
+        price decimal(12,2),
+        address TEXT,
+        PRIMARY KEY (transaction_id),
+        FOREIGN KEY (buyer_user_id) REFERENCES Users1(user_id),
+        FOREIGN KEY (seller_user_id) REFERENCES Users1(user_id),
+        FOREIGN KEY (condo_unit_id) REFERENCES condo_unit(id));
