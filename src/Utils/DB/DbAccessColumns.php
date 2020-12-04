@@ -97,13 +97,37 @@ class DbAccessColumns {
             "type" => "int",
             "name" => "numAdmins"
         ],
-        "description" => [
-            "type" => "string",
-            "name" => "description"
-        ],
         "groupid" => [
             "type" => "string",
             "name" => "groupId"
+        ],
+        "post_id" => [
+            "type" => "string",
+            "name" => "postId"
+        ],
+        "user_id" => [
+            "type" => "string",
+            "name" => "userId"
+        ],
+        "groupname" => [
+            "type" => "string",
+            "name" => "groupName"
+        ],
+        "contents" => [
+            "type" => "string",
+            "name" => "contents"
+        ],
+        "is_commentable" => [
+            "type" => "bool",
+            "name" => "isCommentable"
+        ],
+        "tstamp" => [
+            "type" => "string",
+            "name" => "postedOn"
+        ],
+        "numcomments" => [
+            "type" => "string",
+            "name" => "numComments"
         ]
     ];
 }

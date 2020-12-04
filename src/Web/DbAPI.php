@@ -77,8 +77,79 @@ where {$whereSql}
 order by p.tstamp
 EOD;
 
+    /* @var $dbConn DBConn */
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($sql, $params);
+    return $res;
+}
+
+
+function getPostFromDB($postId) {
+    // TODO check for permissions
+    $sql = <<<EOD
+select p.post_id, p.contents, p.is_commentable, p.tstamp, (select count(*) as numcomments from Comments where post_id = :postid) as numcomments
+from Posts p
+where p.post_id = :postid;
+EOD;
+
+    /* @var $dbConn DBConn */
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($sql, [":postid" => $postId]);
+    return $res;
 
 }
+
+function getPostCommentsFromDB($postId) {
+    // TODO check for permissions
+    $sql = "select * from Comments where post_id = :postid order by tstamp;";
+    /* @var $dbConn DBConn */
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($sql, [":postid" => $postId]);
+    return $res;
+}
+
+function addCommentToDB($postId, $message) {
+    $sql = "insert into Comments (user_id, post_id, message) values (:user_id, :post_id, :comment_text);";
+    /* @var $dbConn DBConn */
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($sql, [
+        ":user_id" => $_SESSION['userId'],
+        ':post_id' => $postId,
+        ":comment_text" => $message
+    ]);
+    return $res;
+}
+
+
+function addPostToDB($groupId, $message, $isCommentable) {
+    $sql = "insert into Posts (user_id, group_id, contents, is_commentable) values (:user_id, :group_id, :contents, :is_commentable);
+            select LAST_INSERT_ID();";
+
+    /* @var $dbConn DBConn */
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($sql, [
+        ":user_id" => $_SESSION['userId'],
+        ":group_id" => $groupId,
+        ":contents" => $message,
+        ":is_commentable" => $isCommentable
+    ]);
+    return $res;
+}
+
+
+function getPotentialMembers($userId, $groupId) {
+    $allConnections = getUserConnections($userId);
+    $potentialMembers = ["potentialMembers" => []];
+    foreach ($allConnections['usersByAssociation'] as $assId => $userIds) {
+        foreach($userIds as $assUserId) {
+            if (!in_array($assUserId, $allConnections['usersByGroup'][$groupId] ?? []) && $assUserId != $userId) {
+                $potentialMembers['potentialMembers'][] = $assUserId;
+            }
+        }
+    }
+    return $potentialMembers;
+}
+
 
 function getUserConnections($userId) {
     $connections = [

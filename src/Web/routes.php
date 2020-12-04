@@ -28,10 +28,20 @@ function setupRoutes($app) {
     $app->get('/users/{userId}/connections', 'getUserConnections', true);
     $app->get('/users/{userId}/posts/allvisible', 'getPostsVisibleToUser', true);
 
+
     $app->get('/groups/{id}', 'renderGroupPage', true);
     $app->get('/groups/search/groupnames', 'getGroupNames', true);
     $app->get('/groups/search/byid', 'getGroupsById', true);
     $app->post('/groups/add/byname', 'createNewGroup', true);
+    $app->get("/groups/{groupId}/posts", "getGroupPosts", true);
+    $app->get("/groups/{groupId}/members/potential", "getPotentialMembers", true);
+
+    $app->get("/association/{associationId}/posts", "getAssociationPosts", true);
+
+    $app->get("/posts/{id}", "getPost", true);
+    $app->get("/posts/{id}/comments", "getPostComments", true);
+    $app->post("/posts/create/post", "createPost", true);
+    $app->post('/posts/create/comment', "createComment", true);
 
     $app->get('/permissions/loggedinuserperms', 'getLoggedInUserPerms');
 
@@ -193,8 +203,58 @@ function createNewGroup(Request $req, $args) {
     DbAPI\createNewGroup($req->getPostBodyKey('name'), $req->getPostBodyKey('description'));
 }
 
-function getGroupsById() {
+function getGroupsById(Request $req, $args) {
     $res = DbAPI\getGroupsById();
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getGroupPosts(Request $req, $args) {
+    $res = DbAPI\getPosts(null, $args['groupId'], null);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getAssociationPosts(Request $req, $args) {
+    $res = DbAPI\getPosts(null, $args['associationId'], null);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getPost(Request $req, $args) {
+    $res = DbAPI\getPostFromDB($args['id']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getPostComments(Request $req, $args) {
+    $res = DbAPI\getPostCommentsFromDB($args['id']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function createPost(Request $req, $args) {
+    $res = DbAPI\addPostToDB(
+        $req->getPostBodyKey("groupId"),
+        $req->getPostBodyKey("contents"),
+        $req->getPostBodyKey("isCommentable")
+    );
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function createComment(Request $req, $args) {
+    $res = DbAPI\addCommentToDB(
+        $req->getPostBodyKey("postId"),
+        $req->getPostBodyKey("message")
+    );
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+
+function getPotentialMembers(Request $req, $args) {
+    $res = DbAPI\getPotentialMembers($_SESSION['userId'], $args['groupId']);
     header('Content-type: application/json');
     echo json_encode($res);
 }
