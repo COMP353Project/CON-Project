@@ -279,7 +279,7 @@ EOD;
     }
 
     private function getUserInfoForProfile() : string {
-        $item = "%FIELD - %VALUE";
+        $item = "<p style=\"display:block;\">%FIELD - %VALUE<br/></p>";
 
         $userInfo = DbAPI\getUserInfoForProfileDisplay();
 
@@ -304,7 +304,7 @@ EOD;
             $newHtml = str_replace("%FIELD", $field, $item);
             $userHtml[] = str_replace("%VALUE", $value, $newHtml);
         }
-        return implode("<br>", $userHtml);
+        return implode("", $userHtml);
     }
 
     private function getUserGroups(): string {

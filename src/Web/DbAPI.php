@@ -54,7 +54,7 @@ function getPosts($userId, $groupId, $associationId) {
 	        p.group_id in (select distinct groupid from group_membership where userid = :userid)
 	        or
 	        (
-	            ur.associationid in (select distinct associationid from user_roles where userid = :userid)
+	            p.user_id in (select distinct userid from user_roles where associationid in (select distinct associationid from user_roles where userid = :userid))
 	            and
 	            p.group_id is null
 	        ) 
@@ -74,9 +74,8 @@ u.firstname, u.lastname, g.name as groupname,
 p.contents, p.is_commentable, p.tstamp,
 (select count(*) as numcomments from Comments where post_id = p.post_id) as numcomments
 from Posts p
-join users u on p.user_id = u.id
+left join users u on p.user_id = u.id
 left join con_group g on p.group_id = g.id
-join user_roles ur on p.user_id = ur.userid
 where {$whereSql}
 order by p.tstamp desc
 EOD;
@@ -133,8 +132,7 @@ function addPostToDB($groupId, $message, $isCommentable) {
     } else {
         die();
     }
-    $sql = "insert into Posts (user_id, group_id, contents, is_commentable) values (:user_id, :group_id, :contents, {$isCommentable});
-            select LAST_INSERT_ID();";
+    $sql = "insert into Posts (user_id, group_id, contents, is_commentable) values (:user_id, :group_id, :contents, {$isCommentable});";
 
     /* @var $dbConn DBConn */
     $dbConn = DB::getInstance()->getConnection();

@@ -343,6 +343,7 @@ function sendPost() {
             "groupId": groupId,
             "isCommentable": commentsAllowed,
         };
+        console.log(postData);
         xhttp.send(JSON.stringify(postData));
     }
 
