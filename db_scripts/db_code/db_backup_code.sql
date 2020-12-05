@@ -142,15 +142,15 @@ CREATE TABLE Votes(
 
 DROP TABLE Parkings;
 CREATE TABLE Parkings(
-        parking_id INT NOT NULL,
+        parking_id INT NOT NULL AUTO_INCREMENT,
         condo_unit_id INT NOT NULL,
         typle varchar(20),
         PRIMARY KEY (parking_id),
         FOREIGN KEY (condo_unit_id) REFERENCES condo_unit(id));
 
-DROP TALBE Storages;
+DROP TABLE Storages;
 CREATE TABLE Storages(
-        storage_id INT NOT NULL,
+        storage_id INT NOT NULL AUTO_INCREMENT,
         condo_unit_id INT NOT NULL,
         typle varchar(20),
         floor int,
@@ -183,7 +183,7 @@ CREATE TABLE Messages(
         message_id int NOT NULL AUTO_INCREMENT,
         sender_user_id int NOT NULL,
         content TEXT,
-        sent_on timestamp,
+        sent_on timestamp NOT NULL DEFAULT now(),
         PRIMARY KEY (message_id),
         FOREIGN KEY (sender_user_id) REFERENCES users(id));
 
@@ -193,7 +193,7 @@ CREATE TABLE Recipients(
         id INT NOT NULL AUTO_INCREMENT,
         message_id INT NOT NULL,
         recipient_user_id INT NOT NULL,
-        opened BOOLEAN,
+        opened BOOLEAN NOT NULL DEFAULT false,
         PRIMARY KEY (id),
         FOREIGN KEY (recipient_user_id) REFERENCES users(id),
         FOREIGN KEY (message_id) REFERENCES Messages(message_id));
