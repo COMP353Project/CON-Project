@@ -36,6 +36,7 @@ function setupRoutes($app) {
     $app->get("/groups/{groupId}/posts", "getGroupPosts", true);
     $app->get("/groups/{groupId}/members/potential", "getPotentialMembers", true);
 
+    $app->get("/association/{associationId}", "renderAssociationPage", true);
     $app->get("/association/{associationId}/posts", "getAssociationPosts", true);
 
     $app->get("/posts/{postId}", "getPost", true);
@@ -190,6 +191,10 @@ function renderPostPage(Request $req, $args) {
     PageRenderer::renderPageForWeb($req, $args, 'postPage');
 }
 
+function renderAssociationPage(Request $req, $args) {
+    PageRenderer::renderPageForWeb($req, $args, 'associationPage');
+}
+
 function bulkInsertUsers(Request $req, $args) {
     $newUserList = $req->getPostBodyKey('newUsers');
     DbAPI\bulkAddUsersToDb($newUserList);
@@ -224,7 +229,7 @@ function getGroupPosts(Request $req, $args) {
 }
 
 function getAssociationPosts(Request $req, $args) {
-    $res = DbAPI\getPosts(null, $args['associationId'], null);
+    $res = DbAPI\getPosts(null, null, $args['associationId']);
     header('Content-type: application/json');
     echo json_encode($res);
 }

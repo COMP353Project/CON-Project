@@ -136,6 +136,22 @@ class DbAccessColumns {
         "comment_id" => [
             "type" => "string",
             "name" => "commentId"
+        ],
+        "numbuildings" => [
+            "type" => "int",
+            "name" => "numBuildings"
+        ],
+        "numowners" => [
+            "type" => "int",
+            "name" => "numOwners"
+        ],
+        "numunits" => [
+            "type" => "int",
+            "name" => "numUnits"
+        ],
+        "occupancyrate" => [
+            "type" => "float",
+            "name" => "occupancyRate"
         ]
     ];
 }

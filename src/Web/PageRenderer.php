@@ -71,6 +71,13 @@ class PageRenderer {
                 "<link rel=\"stylesheet\" href=\"/css/posts.css\">"
             ]
         ],
+        "associationPage" => [
+            "html" => "static/html/association.html",
+            "css" => [
+                "<link rel=\"stylesheet\" href=\"/css/group.css\">",
+                "<link rel=\"stylesheet\" href=\"/css/posts.css\">"
+            ]
+        ],
         "postsContainer" => [
             "html" => "static/html/postsContainer.html",
             "css" => [
@@ -273,34 +280,24 @@ EOD;
 
     private function getUserInfoForProfile() : string {
         $item = "%FIELD - %VALUE";
-        $sql = <<<EOD
-with association_info as (
-	select ur.userid,
-	assoc.name as assoc_name,
-	r.name as r_name
-	from user_roles ur
-	join condo_association assoc on ur.associationid = assoc.id
-	join roles r on ur.roleid = r.id
-	where ur.userid = :user_id
-)
-select
-u.createdon,
-group_concat(ai.assoc_name) as associations,
-group_concat(ai.r_name) as roles,
-(select count(*) from condo_unit cu where cu.ownerid = :user_id) as numcondos
-from users u
-join association_info ai on u.id = ai.userid
-where u.id = :user_id
-group by u.id
-EOD;
-        $userInfo = $this->dbConn->queryWithValues($sql, [":user_id" => $_SESSION['userId']]);
+
+        $userInfo = DbAPI\getUserInfoForProfileDisplay();
 
         $userHtml = [];
         foreach ($userInfo[0] as $field => $value) {
+            if ($field == 'associationId') {
+                continue;
+            }
             if (in_array($field, ['associations', 'roles'])) {
                 $value = explode(",", $value);
                 if ($field == 'roles') {
                     $value = array_unique($value);
+                } else {
+                    $value = array_map(
+                        function($name, $id) {return "<a href=\"/association/{$id}\">{$name}</a>";},
+                        $value,
+                        explode(",", $userInfo[0]['associationId'])
+                    );
                 }
                 $value = implode(", ", $value);
             }
@@ -311,13 +308,8 @@ EOD;
     }
 
     private function getUserGroups(): string {
-        $sql = <<<EOD
-select cg.id, cg.name 
-from group_membership gm
-join con_group cg on gm.groupid = cg.id 
-where gm.userid = :user_id
-EOD;
-        $userGroups = $this->dbConn->queryWithValues($sql, [":user_id" => $_SESSION['userId']]);
+
+        $userGroups = DbAPI\getUserGroupsForDisplay();
         $html = <<<EOD
 <table class="table table-striped" id="group-name-table">
     <thead>
@@ -370,23 +362,9 @@ EOD;
     }
 
     private function getGroupInfoForDisplay(): string {
+        $res = DbAPI\getGroupInfoForDisplay($this->requestArgs['id']);
+
         $item = "%FIELD - %VALUE";
-        $sql = <<<EOD
-with membership as (
-	select roleid, count(*) as num_users
-	from group_membership
-	where groupid = :groupid
-	group by roleid
-)
-select
-description,
-createdon,
-coalesce((select num_users from membership where roleid = 1),0) as nummembers,
-coalesce((select num_users from membership where roleid = 2),0) as numadmins
-from con_group
-where id = :groupid
-EOD;
-        $res = $this->dbConn->queryWithValues($sql, [":groupid" => $this->requestArgs['id']]);
         $groupHtml = [];
         foreach ($res[0] as $field => $value) {
             $newHtml = str_replace("%FIELD", $field, $item);
@@ -404,19 +382,36 @@ EOD;
         return $this->getGroupMembersByRole("MEMBERS", 1);
     }
 
-    private function getGroupMembersByRole($roleName, $roleId): string {
+    private function getAssociationAdmins() {
+        return $this->getGroupMembersByRole("ADMINS", 2, "user_roles");
+    }
+
+    private function getAssociationMembers() {
+        return $this->getGroupMembersByRole("MEMBERS", 3, "user_roles");
+    }
+
+    private function getGroupMembersByRole($roleName, $roleId, $table = "group_membership"): string {
+
+        $table_options = [
+            "group_membership" => ["name" => "groupid"],
+            "user_roles" => ["name" => "associationid"]
+        ];
+
+        $option = $table_options[$table];
+        $theId = ($table == "group_membership") ? $this->requestArgs['id'] : $this->requestArgs['associationId'];
+
         $sql = <<<EOD
 select u.firstname, u.lastname
 from users u 
-join group_membership g on u.id = g.userid
-where g.groupid = :groupid and g.roleid = :roleid
+join $table g on u.id = g.userid
+where g.{$option['name']} = :groupid and g.roleid = :roleid
 EOD;
         $res = $this->dbConn->queryWithValues($sql, [
-            ":groupid" => $this->requestArgs['id'],
+            ":groupid" => $theId,
             ":roleid" => $roleId
         ]);
 
-        $listHtml = "<ul class=\"list-group\">" .
+        $listHtml = "<ul class=\"list-group w-100\">" .
             "    <li class=\"list-group-item d-flex justify-content-between align-items-center disabled\">
                  {$roleName}
                  <span><i class=\"fa fa-cogs\"></i>&nbsp;&nbsp;</span>
@@ -534,6 +529,51 @@ EOD;
 EOD;
 
         }
+    }
+
+    private function getAssociationName() {
+        $res = DbAPI\getAssociationName($this->requestArgs['associationId']);
+        if (sizeof($res) == 0) {
+            return "Invalid ASSOCIATION ID";
+        } else {
+            return $res[0]['name'];
+        }
+    }
+
+    private function getAssociationInfoForDisplay() {
+        $res = DbAPI\getAssociationInfoForDisplay($this->requestArgs['associationId']);
+
+        $item = "%FIELD - %VALUE";
+        $groupHtml = [];
+        foreach ($res[0] as $field => $value) {
+            $newHtml = str_replace("%FIELD", $field, $item);
+            $groupHtml[] = str_replace("%VALUE", $value, $newHtml);
+        }
+
+        return implode("<br>", $groupHtml);
+    }
+
+    private function getAssociationBuildings() {
+        $res = DbAPI\getAssociationBuildings($this->requestArgs['associationId']);
+        $listHtml = "<ul class=\"list-group w-100\">" .
+            "    <li class=\"list-group-item d-flex justify-content-between align-items-center disabled\">
+                 BUILDINGS
+                 <span><i class=\"fa fa-cogs\"></i>&nbsp;&nbsp;</span>
+                 </li>" .
+            "    %LISTITEMS%" .
+            "</ul>";
+
+        if (sizeof($res) > 0) {
+            $listItems = [];
+            foreach ($res as $member) {
+                $listItems[] = "    <li class=\"list-group-item d-flex justify-content-between align-items-center\">{$member['name']}</li>";
+            }
+            $listItems = implode("", $listItems);
+        } else {
+            $listItems = "    <li class=\"list-group-item d-flex justify-content-between align-items-center\">No buildings</li>";
+        }
+
+        return str_replace("%LISTITEMS%", $listItems, $listHtml);
     }
 }
 

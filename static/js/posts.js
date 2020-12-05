@@ -282,7 +282,7 @@ function getPosts() {
         } else if (groupId != null) {
             requestUrl = `/groups/${groupId}/posts`;
         } else {
-            requestUrl = `/groups/${associationId}/posts`;
+            requestUrl = `/association/${associationId}/posts`;
         }
     } else {
         requestUrl = `/posts/${postId}/comments`;

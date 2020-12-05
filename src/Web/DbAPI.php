@@ -64,8 +64,8 @@ function getPosts($userId, $groupId, $associationId) {
         $whereSql = "p.group_id = :group_id";
         $params = [":group_id" => $groupId];
     } else {
-        $whereSql = "ur.associationid = :associationid";
-        $params = [":asociationid" => $associationId];
+        $whereSql = "ur.associationid = :associationid and p.group_id is null";
+        $params = [":associationid" => $associationId];
     }
     $sql = <<<EOD
 select 
@@ -382,6 +382,95 @@ function getGroupsById() {
     $dbConn = DB::getInstance()->getConnection();
     $res = $dbConn->queryWithValues($sql, [":userid" => $_SESSION['userId']]);
     return $res;
+}
+
+function getUserInfoForProfileDisplay() {
+    $sql = <<<EOD
+with association_info as (
+	select ur.userid,
+	assoc.id as associationid,
+	assoc.name as assoc_name,
+	r.name as r_name
+	from user_roles ur
+	join condo_association assoc on ur.associationid = assoc.id
+	join roles r on ur.roleid = r.id
+	where ur.userid = :user_id
+)
+select
+u.createdon,
+group_concat(ai.associationid) as associationid,
+group_concat(ai.assoc_name) as associations,
+group_concat(ai.r_name) as roles,
+(select count(*) from condo_unit cu where cu.ownerid = :user_id) as numcondos
+from users u
+join association_info ai on u.id = ai.userid
+where u.id = :user_id
+group by u.id
+EOD;
+    return DB::getInstance()->getConnection()->queryWithValues($sql, [":user_id" => $_SESSION['userId']]);
+}
+
+function getUserGroupsForDisplay() {
+    $sql = <<<EOD
+select cg.id, cg.name 
+from group_membership gm
+join con_group cg on gm.groupid = cg.id 
+where gm.userid = :user_id
+EOD;
+
+    return DB::getInstance()->getConnection()->queryWithValues($sql, [":user_id" => $_SESSION['userId']]);
+}
+
+function getGroupInfoForDisplay($groupId) {
+    $sql = <<<EOD
+with membership as (
+	select roleid, count(*) as num_users
+	from group_membership
+	where groupid = :groupid
+	group by roleid
+)
+select
+description,
+createdon,
+coalesce((select num_users from membership where roleid = 1),0) as nummembers,
+coalesce((select num_users from membership where roleid = 2),0) as numadmins
+from con_group
+where id = :groupid
+EOD;
+    return DB::getInstance()->getConnection()->queryWithValues($sql, [":groupid" => $groupId]);
+}
+
+function getAssociationName($associationId) {
+    $sql = "select name from condo_association where id = :association_id;";
+    return DB::getInstance()->getConnection()->queryWithValues($sql, [":association_id" => $associationId]);
+}
+
+function getAssociationInfoForDisplay($associationId) {
+    $sql = <<<EOD
+with membership as (
+	select roleid, count(*) as num_users
+	from user_roles
+	where associationid = :association_id
+	group by roleid
+)
+select
+a.createdon,
+coalesce((select num_users from membership where roleid = 3),0) as nummembers,
+coalesce((select num_users from membership where roleid = 2),0) as numadmins,
+coalesce((select count(*) from (select id from building where associationid = :association_id) x), 0) as numbuildings,
+coalesce((select count(distinct ownerid) from condo_unit where buildingid in (select id from building where associationid = :association_id)), 0) as numowners,
+coalesce((select count(*) from condo_unit where buildingid in (select id from building where associationid = :association_id)), 0) as numunits,
+coalesce(((select count(*) from condo_unit where buildingid in (select id from building where associationid = :association_id) and ownerid is not null) / (select count(*) from condo_unit where buildingid in (select id from building where associationid = :association_id))), 0) * 100 as occupancyrate 
+from condo_association a
+where id = :association_id;
+EOD;
+
+    return DB::getInstance()->getConnection()->queryWithValues($sql, [":association_id" => $associationId]);
+}
+
+function getAssociationBuildings($associationId) {
+    $sql = "select name from building where associationid = :association_id;";
+    return DB::getInstance()->getConnection()->queryWithValues($sql, [":association_id" => $associationId]);
 }
 
 /* =====================================================================
