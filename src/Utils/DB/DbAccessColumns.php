@@ -128,6 +128,14 @@ class DbAccessColumns {
         "numcomments" => [
             "type" => "string",
             "name" => "numComments"
+        ],
+        "message" => [
+            "type" => "string",
+            "name" => "message"
+        ],
+        "comment_id" => [
+            "type" => "string",
+            "name" => "commentId"
         ]
     ];
 }
