@@ -90,7 +90,9 @@ class PageRenderer {
         "emailPage" => [
             "html" => "static/html/email.html",
             "css" => [
-                "<link rel=\"stylesheet\" href=\"/css/email.css\">"
+                "<link rel=\"stylesheet\" href=\"/css/email.css\">",
+                "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css?family=Roboto|Varela+Round\">",
+                "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/icon?family=Material+Icons\">"
             ]
         ],
     ];
@@ -129,12 +131,6 @@ class PageRenderer {
 
     static function renderPageForWeb(Request $request, $args, $pageName) {
         $renderer = new PageRenderer($pageName, $request, $args);
-        $renderer->renderPage();
-        $renderer->finish();
-    }
-
-    static function renderEmailPage(Request $request, $args) {
-        $renderer = new PageRenderer("email", $request, $args);
         $renderer->renderPage();
         $renderer->finish();
     }
