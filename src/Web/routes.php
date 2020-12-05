@@ -25,11 +25,25 @@ function setupRoutes($app) {
     $app->get('/users', 'getUsers', true);
     $app->get('/users/{userId}', 'getUsers', true);
     $app->post('/users/bulk/create', 'bulkInsertUsers');
+    $app->get('/users/{userId}/connections', 'getUserConnections', true);
+    $app->get('/users/{userId}/posts/allvisible', 'getPostsVisibleToUser', true);
+
 
     $app->get('/groups/{id}', 'renderGroupPage', true);
-    $app->get('/groups/search/groupnames', 'getGroupNames', true);
+    $app->get('/groups/search/groupnames', 'getGroupNames');
     $app->get('/groups/search/byid', 'getGroupsById', true);
     $app->post('/groups/add/byname', 'createNewGroup', true);
+    $app->get("/groups/{groupId}/posts", "getGroupPosts", true);
+    $app->get("/groups/{groupId}/members/potential", "getPotentialMembers", true);
+
+    $app->get("/association/{associationId}", "renderAssociationPage", true);
+    $app->get("/association/{associationId}/posts", "getAssociationPosts", true);
+
+    $app->get("/posts/{postId}", "getPost", true);
+    $app->get("/posts/{postId}/comments", "getPostComments", true);
+    $app->get("/posts/{postId}/conversation", "renderPostPage", true);
+    $app->post("/posts/create/post", "createPost", true);
+    $app->post('/posts/create/comment', "createComment", true);
 
     $app->get('/permissions/loggedinuserperms', 'getLoggedInUserPerms');
 
@@ -52,6 +66,9 @@ function setupRoutes($app) {
     $app->get("/route/{withVar}/for/testing", function(Request $request, $args) {echo 'IT WORKED';}, true);
 
     $app->get("/route/{withVar}/for/{testing}/doodoo", function(Request $request, $args) {echo 'IT WORKED';});
+
+    //$app->post('/posts/create/comment', "createComment", true);
+    $app->get('/email', 'renderEmailPage', true);
 }
 
 /* =====================================================================
@@ -65,7 +82,21 @@ function getUsers(Request $request, $args) {
    $userIds =  (isset($args['userId'])) ?
             $args['userId'] :
             $request->getQueryParam('userid', []);
-    DbApi\getUsersFromDB($userIds);
+    $res = DbApi\getUsersFromDB($userIds);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getUserConnections(Request $req, $args) {
+    $res = DbAPI\getUserConnections($args['userId']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getPostsVisibleToUser(Request $req, $args) {
+    $res = DbAPI\getPosts($args['userId'], null, null);
+    header('Content-type: application/json');
+    echo json_encode($res);
 }
 
 function signUp(Request $request, $args) {
@@ -156,25 +187,94 @@ function renderGroupPage(Request $req, $args) {
     PageRenderer::renderPageForWeb($req, $args, 'groupPage');
 }
 
+function renderPostPage(Request $req, $args) {
+    PageRenderer::renderPageForWeb($req, $args, 'postPage');
+}
+
+function renderAssociationPage(Request $req, $args) {
+    PageRenderer::renderPageForWeb($req, $args, 'associationPage');
+}
+
 function bulkInsertUsers(Request $req, $args) {
     $newUserList = $req->getPostBodyKey('newUsers');
     DbAPI\bulkAddUsersToDb($newUserList);
 }
 
 function queryForAtAGlance(Request $req, $args) {
-    DbAPI\yoyParticipation($args['type']);
+    $res = DbAPI\yoyParticipation($args['type']);
+    header('Content-type: application/json');
+    echo json_encode($res);
 }
 
 function getGroupNames(Request $req, $args) {
-    DbAPI\getGroupNames();
+    $res = DbAPI\getGroupNames();
+    header('Content-type: application/json');
+    echo json_encode($res);
 }
 
 function createNewGroup(Request $req, $args) {
     DbAPI\createNewGroup($req->getPostBodyKey('name'), $req->getPostBodyKey('description'));
 }
 
-function getGroupsById() {
-    DbAPI\getGroupsById();
+function getGroupsById(Request $req, $args) {
+    $res = DbAPI\getGroupsById();
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getGroupPosts(Request $req, $args) {
+    $res = DbAPI\getPosts(null, $args['groupId'], null);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getAssociationPosts(Request $req, $args) {
+    $res = DbAPI\getPosts(null, null, $args['associationId']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getPost(Request $req, $args) {
+    $res = DbAPI\getPostFromDB($args['postId']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getPostComments(Request $req, $args) {
+    $res = DbAPI\getPostCommentsFromDB($args['postId']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function createPost(Request $req, $args) {
+    $res = DbAPI\addPostToDB(
+        $req->getPostBodyKey("groupId"),
+        $req->getPostBodyKey("contents"),
+        $req->getPostBodyKey("isCommentable")
+    );
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function createComment(Request $req, $args) {
+    $res = DbAPI\addCommentToDB(
+        $req->getPostBodyKey("postId"),
+        $req->getPostBodyKey("message")
+    );
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+
+function getPotentialMembers(Request $req, $args) {
+    $res = DbAPI\getPotentialMembers($_SESSION['userId'], $args['groupId']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+
+function renderEmailPage(Request $req, $args) {
+    PageRenderer::renderPageForWeb($req, $args, 'emailPage');
 }
 
 /* =====================================================================

@@ -97,9 +97,61 @@ class DbAccessColumns {
             "type" => "int",
             "name" => "numAdmins"
         ],
-        "description" => [
+        "groupid" => [
             "type" => "string",
-            "name" => "description"
+            "name" => "groupId"
+        ],
+        "post_id" => [
+            "type" => "string",
+            "name" => "postId"
+        ],
+        "user_id" => [
+            "type" => "string",
+            "name" => "userId"
+        ],
+        "groupname" => [
+            "type" => "string",
+            "name" => "groupName"
+        ],
+        "contents" => [
+            "type" => "string",
+            "name" => "contents"
+        ],
+        "is_commentable" => [
+            "type" => "bool",
+            "name" => "isCommentable"
+        ],
+        "tstamp" => [
+            "type" => "string",
+            "name" => "postedOn"
+        ],
+        "numcomments" => [
+            "type" => "string",
+            "name" => "numComments"
+        ],
+        "message" => [
+            "type" => "string",
+            "name" => "message"
+        ],
+        "comment_id" => [
+            "type" => "string",
+            "name" => "commentId"
+        ],
+        "numbuildings" => [
+            "type" => "int",
+            "name" => "numBuildings"
+        ],
+        "numowners" => [
+            "type" => "int",
+            "name" => "numOwners"
+        ],
+        "numunits" => [
+            "type" => "int",
+            "name" => "numUnits"
+        ],
+        "occupancyrate" => [
+            "type" => "float",
+            "name" => "occupancyRate"
         ]
     ];
 }
