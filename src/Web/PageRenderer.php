@@ -86,7 +86,13 @@ class PageRenderer {
                 "<link rel=\"stylesheet\" href=\"/css/profile.css\">",
                 "<link rel=\"stylesheet\" href=\"/css/posts.css\">"
             ]
-        ]
+        ],
+        "emailPage" => [
+            "html" => "static/html/email.html",
+            "css" => [
+                "<link rel=\"stylesheet\" href=\"/css/email.css\">"
+            ]
+        ],
     ];
 
     private $targetPage;
@@ -123,6 +129,12 @@ class PageRenderer {
 
     static function renderPageForWeb(Request $request, $args, $pageName) {
         $renderer = new PageRenderer($pageName, $request, $args);
+        $renderer->renderPage();
+        $renderer->finish();
+    }
+
+    static function renderEmailPage(Request $request, $args) {
+        $renderer = new PageRenderer("email", $request, $args);
         $renderer->renderPage();
         $renderer->finish();
     }
@@ -230,10 +242,7 @@ on r.id = ur.roleid
 where u.id = :user_id
 EOD;
 
-            $userInfo = $this->dbConn->queryWithValues(
-                $sql,
-                [":user_id" => $_SESSION['userId']]
-            );
+            $userInfo = $this->dbConn->queryWithValues($sql, [":user_id" => $_SESSION['userId']]);
             $userName = $userInfo[0]['firstName'] . " " . $userInfo[0]['lastName'];
             $superUserItem = "";
             // administrators get extra button in user dropdown
@@ -250,7 +259,7 @@ EOD;
                     <div class="dropdown-menu dropdown-primary dropdown-menu-right">
                         <a class="dropdown-item">$userName</a>
                         <a class="dropdown-item" href="/profile"><i class="fa fa-user-secret"></i>&nbsp;&nbsp;Your Page</a>
-                        $superUserItem<a class="dropdown-item" href="#"><i class="fa fa-envelope"></i>&nbsp;&nbsp;Check mail</a>
+                        $superUserItem<a class="dropdown-item" href="/email"><i class="fa fa-envelope"></i>&nbsp;&nbsp;Check mail</a>
                         <a class="dropdown-item" href="/logout"><i class="fa fa-user-times"></i>&nbsp;&nbsp;Log Out</a>
                     </div>
                 </li>
@@ -429,6 +438,20 @@ EOD;
         }
 
         return str_replace("%LISTITEMS%", $listItems, $listHtml);
+    }
+
+    private function addNewMessage()
+    {
+        //ISSET
+        //Create vars
+        //Do POST
+        //INSERT
+        $sql = "select cg.id, cg.name 
+                from group_membership gm
+                join con_group cg on gm.groupid = cg.id 
+                where gm.userid = :user_id";
+
+        $userGroups = $this->dbConn->queryWithValues($sql, [":user_id" => $_SESSION['userId']]);
     }
 
     private function includeScripts() {
