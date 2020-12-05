@@ -53,7 +53,11 @@ function getPosts($userId, $groupId, $associationId) {
         $whereSql = "(
 	        p.group_id in (select distinct groupid from group_membership where userid = :userid)
 	        or
-	        ur.associationid in (select distinct associationid from user_roles where userid = :userid)
+	        (
+	            ur.associationid in (select distinct associationid from user_roles where userid = :userid)
+	            and
+	            p.group_id is null
+	        ) 
         )";
         $params = [":userid" => $userId];
     } elseif (!is_null($groupId)) {
