@@ -64,6 +64,9 @@ function setupRoutes($app) {
     $app->get("/route/{withVar}/for/testing", function(Request $request, $args) {echo 'IT WORKED';}, true);
 
     $app->get("/route/{withVar}/for/{testing}/doodoo", function(Request $request, $args) {echo 'IT WORKED';});
+
+    //$app->post('/posts/create/comment', "createComment", true);
+    $app->get('/email', 'renderEmailPage', true);
 }
 
 /* =====================================================================
@@ -257,6 +260,11 @@ function getPotentialMembers(Request $req, $args) {
     $res = DbAPI\getPotentialMembers($_SESSION['userId'], $args['groupId']);
     header('Content-type: application/json');
     echo json_encode($res);
+}
+
+
+function renderEmailPage(Request $req, $args) {
+    PageRenderer::renderPageForWeb($req, $args, 'emailPage');
 }
 
 /* =====================================================================
