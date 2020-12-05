@@ -2,6 +2,7 @@
 
 namespace Web;
 
+use Web\DbAPI;
 use Http\Request;
 use Utils\DB\DB;
 use Utils\DB\DBConn;
@@ -76,7 +77,14 @@ class PageRenderer {
                 "<link rel=\"stylesheet\" href=\"/css/posts.css\">"
             ],
             "js" => [
-                "<script src=\"/js/posts.js\"></script>"
+                "<script src=\"/js/posts.js\"></script>",
+            ]
+        ],
+        "postPage" => [
+            "html" => "static/html/addComment.html",
+            "css" => [
+                "<link rel=\"stylesheet\" href=\"/css/profile.css\">",
+                "<link rel=\"stylesheet\" href=\"/css/posts.css\">"
             ]
         ]
     ];
@@ -425,6 +433,88 @@ EOD;
 
     private function includeScripts() {
         return implode("\r\n    ", $this->scripts);
+    }
+
+    private function addGlobalPageInfo() {
+        $isSinglePost = ($this->targetPage == 'postPage') ? "true" : "false";
+        $groupId = ($this->targetPage == 'groupPage') ? $this->requestArgs['id'] : "null";
+        $associationPage = ($this->targetPage == 'associationPage') ? $this->requestArgs['associationId'] : "null";
+        $postId = ($this->targetPage == 'postPage') ? $this->requestArgs['postId'] : "null";
+        $globalInfoScript = <<<EOD
+        <script>
+            var pageName = '{$this->targetPage}';
+            var userId = {$_SESSION['userId']};
+            var groupId = {$groupId};
+            var associationId = {$associationPage};
+            var isSinglePost = {$isSinglePost};
+            var postId = {$postId};
+            </script>
+EOD;
+        $this->scripts = array_merge([$globalInfoScript], $this->scripts);
+    }
+
+    private function isNotCommentPage() {
+        return in_array($this->targetPage, ['groupPage', 'associationPage', 'profilePage']);
+    }
+
+    private function getPostContainerHeader() {
+        return ($this->isNotCommentPage()) ? "Create POST" : "Add COMMENT";
+    }
+
+    private function getPostContainerFeedHeader() {
+        return ($this->isNotCommentPage()) ? "News Feed" : "Comments";
+    }
+
+    private function postButtonText() {
+        return ($this->isNotCommentPage()) ? "POST" : "COMMENT";
+    }
+
+    private function addCommentsText() {
+        if ($this->isNotCommentPage()) {
+            return "<small class=\"d-block text-right mt-3\">
+            <a id=\"comments-anchor\">Comments allowed</a>
+        </small>";
+        } else {
+            return "";
+        }
+    }
+
+    private function commentToggleDiv() {
+        if ($this->isNotCommentPage()) {
+        return <<<EOD
+            <div id="comment-toggle-div">
+            <button onclick="toggleComments()" type="button" class="btn btn-primary bg-purple" data-toggle="button" aria-pressed="false" autocomplete="off">
+            Toggle Comments
+        </button>
+        </div>
+EOD;
+        } else {
+            return "";
+        }
+    }
+
+    private function getPostInfo() {
+        if ($this->isNotCommentPage()) {
+            return "";
+        } else {
+            $post = DbAPI\getPostFromDB($this->requestArgs['postId'])[0];
+            $groupName = (is_null($post['groupName'])) ? "" : " --> TO --> " . $post['groupName'];
+            $postDate = implode(" @ ", explode(" ", $post['postedOn']));
+            $postComment = implode("<br>", explode("\n", $post['contents']));
+            return <<<EOD
+<div class="media text-muted pt-3">
+            <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
+            <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <strong class="d-block text-gray-dark" style="padding-bottom: 5px;">${post['firstName']} ${post['lastName']}${groupName}</strong>
+                ${postComment}
+                <small class="d-block text-right mt-3">
+                    ${postDate}
+                </small>
+            </p>
+        </div>
+EOD;
+
+        }
     }
 }
 

@@ -49,3 +49,13 @@ html,body
 {
     height:100%;
 }
+
+
+
+a:link {
+    color:black;
+}
+
+a:visited {
+    color: black;
+}

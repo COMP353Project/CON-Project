@@ -74,7 +74,7 @@ join users u on p.user_id = u.id
 left join con_group g on p.group_id = g.id
 join user_roles ur on p.user_id = ur.userid
 where {$whereSql}
-order by p.tstamp
+order by p.tstamp desc
 EOD;
 
     /* @var $dbConn DBConn */
@@ -87,8 +87,10 @@ EOD;
 function getPostFromDB($postId) {
     // TODO check for permissions
     $sql = <<<EOD
-select p.post_id, p.contents, p.is_commentable, p.tstamp, (select count(*) as numcomments from Comments where post_id = :postid) as numcomments
+select p.post_id, u.firstname, u.lastname, p.contents, g.name as groupname, p.is_commentable, p.tstamp, (select count(*) as numcomments from Comments where post_id = :postid) as numcomments
 from Posts p
+join users u on p.user_id = u.id  
+left join con_group g on p.group_id = g.id
 where p.post_id = :postid;
 EOD;
 
@@ -101,7 +103,7 @@ EOD;
 
 function getPostCommentsFromDB($postId) {
     // TODO check for permissions
-    $sql = "select * from Comments where post_id = :postid order by tstamp;";
+    $sql = "select c.message, u.firstname, u.lastname, c.tstamp from Comments c join users u on u.id = c.user_id where post_id = :postid order by tstamp desc;";
     /* @var $dbConn DBConn */
     $dbConn = DB::getInstance()->getConnection();
     $res = $dbConn->queryWithValues($sql, [":postid" => $postId]);
@@ -122,7 +124,12 @@ function addCommentToDB($postId, $message) {
 
 
 function addPostToDB($groupId, $message, $isCommentable) {
-    $sql = "insert into Posts (user_id, group_id, contents, is_commentable) values (:user_id, :group_id, :contents, :is_commentable);
+    if (is_bool($isCommentable)) {
+        $isCommentable = ($isCommentable) ? "true" : "false";
+    } else {
+        die();
+    }
+    $sql = "insert into Posts (user_id, group_id, contents, is_commentable) values (:user_id, :group_id, :contents, {$isCommentable});
             select LAST_INSERT_ID();";
 
     /* @var $dbConn DBConn */
@@ -130,8 +137,7 @@ function addPostToDB($groupId, $message, $isCommentable) {
     $res = $dbConn->queryWithValues($sql, [
         ":user_id" => $_SESSION['userId'],
         ":group_id" => $groupId,
-        ":contents" => $message,
-        ":is_commentable" => $isCommentable
+        ":contents" => $message
     ]);
     return $res;
 }

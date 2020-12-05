@@ -38,8 +38,9 @@ function setupRoutes($app) {
 
     $app->get("/association/{associationId}/posts", "getAssociationPosts", true);
 
-    $app->get("/posts/{id}", "getPost", true);
-    $app->get("/posts/{id}/comments", "getPostComments", true);
+    $app->get("/posts/{postId}", "getPost", true);
+    $app->get("/posts/{postId}/comments", "getPostComments", true);
+    $app->get("/posts/{postId}/conversation", "renderPostPage", true);
     $app->post("/posts/create/post", "createPost", true);
     $app->post('/posts/create/comment', "createComment", true);
 
@@ -89,7 +90,7 @@ function getUserConnections(Request $req, $args) {
 }
 
 function getPostsVisibleToUser(Request $req, $args) {
-    $res = DbAPI\getPosts([$args['userId']], null, null);
+    $res = DbAPI\getPosts($args['userId'], null, null);
     header('Content-type: application/json');
     echo json_encode($res);
 }
@@ -182,6 +183,10 @@ function renderGroupPage(Request $req, $args) {
     PageRenderer::renderPageForWeb($req, $args, 'groupPage');
 }
 
+function renderPostPage(Request $req, $args) {
+    PageRenderer::renderPageForWeb($req, $args, 'postPage');
+}
+
 function bulkInsertUsers(Request $req, $args) {
     $newUserList = $req->getPostBodyKey('newUsers');
     DbAPI\bulkAddUsersToDb($newUserList);
@@ -222,13 +227,13 @@ function getAssociationPosts(Request $req, $args) {
 }
 
 function getPost(Request $req, $args) {
-    $res = DbAPI\getPostFromDB($args['id']);
+    $res = DbAPI\getPostFromDB($args['postId']);
     header('Content-type: application/json');
     echo json_encode($res);
 }
 
 function getPostComments(Request $req, $args) {
-    $res = DbAPI\getPostCommentsFromDB($args['id']);
+    $res = DbAPI\getPostCommentsFromDB($args['postId']);
     header('Content-type: application/json');
     echo json_encode($res);
 }

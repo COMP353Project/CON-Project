@@ -64,3 +64,49 @@ body {
 .lh-100 { line-height: 1; }
 .lh-125 { line-height: 1.25; }
 .lh-150 { line-height: 1.5; }
+
+#post-content-box {
+    overflow: hidden;
+    overflow-wrap: break-word;
+    resize: horizontal;
+    height: 200px;
+    width: 98%;
+    border-radius:20px;
+    display: block;
+    padding: 10px ;
+}
+
+#textarea-padding {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: #CAE5F8;
+    box-shadow: 0 0 0 2px #CAE5F8;
+}
+
+.empty-posts {
+    height: 300px;
+    display: block;
+}
+
+.empty-posts-p {
+    text-align: center;
+    place-items: center;
+    display: block;
+}
+
+#comment-toggle-div {
+    display:flex;
+    justify-content:flex-end;
+    width:100%;
+    padding-top:5px;
+    padding-bottom:5px
+}
+
+.grid-div{
+    display:grid;
+    grid-template-columns: repeat(2, 50%);
+}
