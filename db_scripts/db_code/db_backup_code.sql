@@ -60,17 +60,6 @@ CREATE TABLE ConGroup(
         FOREIGN KEY (user_id) REFERENCES Users1(user_id),
         FOREIGN KEY (group_role_code) REFERENCES GroupRole(group_role_code));
 
-DROP TABLE Messages;
-CREATE TABLE Messages(
-        message_id int NOT NULL AUTO_INCREMENT,
-        con_group_id int NOT NULL,
-        user_id int NOT NULL,
-        content TINYTEXT,
-        tstamp timestamp,
-        PRIMARY KEY (message_id),
-        FOREIGN KEY (user_id) REFERENCES Users1(user_id),
-        FOREIGN KEY (con_group_id) REFERENCES ConGroup(con_group_id));
-
 DROP TABLE PostsPermissions;
 CREATE TABLE PostsPermissions(
         posts_permissions_code varchar(3) NOT NULL,
@@ -188,3 +177,23 @@ CREATE TABLE Transactions(
         FOREIGN KEY (buyer_user_id) REFERENCES Users1(user_id),
         FOREIGN KEY (seller_user_id) REFERENCES Users1(user_id),
         FOREIGN KEY (condo_unit_id) REFERENCES condo_unit(id));
+
+DROP TABLE Messages;
+CREATE TABLE Messages(
+        message_id int NOT NULL AUTO_INCREMENT,
+        sender_user_id int NOT NULL,
+        content TEXT,
+        sent_on timestamp,
+        PRIMARY KEY (message_id),
+        FOREIGN KEY (sender_user_id) REFERENCES users(id));
+
+
+DROP TABLE Recipients;
+CREATE TABLE Recipients(
+        id INT NOT NULL AUTO_INCREMENT,
+        message_id INT NOT NULL,
+        recipient_user_id INT NOT NULL,
+        opened BOOLEAN,
+        PRIMARY KEY (id),
+        FOREIGN KEY (recipient_user_id) REFERENCES users(id),
+        FOREIGN KEY (message_id) REFERENCES Messages(message_id));
