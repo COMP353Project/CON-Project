@@ -27,6 +27,8 @@ function setupRoutes($app) {
     $app->post('/users/bulk/create', 'bulkInsertUsers');
     $app->get('/users/{userId}/connections', 'getUserConnections', true);
     $app->get('/users/{userId}/posts/allvisible', 'getPostsVisibleToUser', true);
+    $app->get('/users/{userId}/emails/sent', "getSentEmails", true);
+    $app->get('/users/{userId}/emails/received', "getReceivedEmails", true);
 
 
     $app->get('/groups/{id}', 'renderGroupPage', true);
@@ -38,6 +40,7 @@ function setupRoutes($app) {
 
     $app->get("/association/{associationId}", "renderAssociationPage", true);
     $app->get("/association/{associationId}/posts", "getAssociationPosts", true);
+    $app->get('/association/get/byid', 'getAssociationsById', true);
 
     $app->get("/posts/{postId}", "getPost", true);
     $app->get("/posts/{postId}/comments", "getPostComments", true);
@@ -69,6 +72,7 @@ function setupRoutes($app) {
 
     //$app->post('/posts/create/comment', "createComment", true);
     $app->get('/email', 'renderEmailPage', true);
+    $app->post('/email', 'sendEmail', true);
 }
 
 /* =====================================================================
@@ -217,10 +221,22 @@ function createNewGroup(Request $req, $args) {
 }
 
 function getGroupsById(Request $req, $args) {
-    $res = DbAPI\getGroupsById();
+    if ($req->getQueryParam('checksuperuser', 'false') == 'true') {
+        $res = DbAPI\getGroupsById(true);
+    } else {
+        $res = DbAPI\getGroupsById();
+    }
+
     header('Content-type: application/json');
     echo json_encode($res);
 }
+
+function getAssociationsById(Request $req, $args) {
+    $res = DbAPI\getAssociationsById();
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
 
 function getGroupPosts(Request $req, $args) {
     $res = DbAPI\getPosts(null, $args['groupId'], null);
@@ -275,6 +291,26 @@ function getPotentialMembers(Request $req, $args) {
 
 function renderEmailPage(Request $req, $args) {
     PageRenderer::renderPageForWeb($req, $args, 'emailPage');
+}
+
+function getSentEmails(Request $req, $args) {
+    $res = DbAPI\getSentEmailsFromDB($args['userId']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getReceivedEmails(Request $req, $args) {
+    $res = DbAPI\getReceivedEmailsFromDB($args['userId']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function sendEmail(Request $req, $args) {
+    DbAPI\sendEmailInDB(
+        $req->getPostBodyKey('subject'),
+        $req->getPostBodyKey('content'),
+        $req->getPostBodyKey('recipients')
+    );
 }
 
 /* =====================================================================

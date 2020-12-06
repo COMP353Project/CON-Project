@@ -160,6 +160,20 @@ function getPotentialMembers($userId, $groupId) {
 
 
 function getUserConnections($userId) {
+    $userRoles = "select roleid from user_roles where :userid = userid;";
+    $res = array_map(
+        function($userArray) { return $userArray['roleId'];},
+        DB::getInstance()->getConnection()->queryWithValues($userRoles, [':userid' => $userId])
+    );
+
+    if (in_array("1", $res)) {
+        $associationWhere = "1=1";
+        $groupWhere = "1=1";
+    } else {
+        $associationWhere = "ur.associationid in (select associationid from user_roles where userid = :userid) or ur.associationid = 1";
+        $groupWhere = "gm.groupid in (select groupid from group_membership where userid = :userid)";
+    }
+
     $connections = [
         'allUsers' => [],
         'usersByGroup' => [],
@@ -171,12 +185,12 @@ function getUserConnections($userId) {
 select u.id as userid, NULL as groupid, ur.associationid 
 from user_roles ur
 join users u on ur.userid = u.id
-where ur.associationid in (select associationid from user_roles where userid = :userid) or ur.associationid = 1
+where $associationWhere
 union all
 select u.id as userid, gm.groupid, NULL as associationid
 from group_membership gm
 join users u on gm.userid = u.id
-where gm.groupid in (select groupid from group_membership where userid = :userid)
+where $groupWhere
 EOD;
 
     /* @var $dbConn DBConn */
@@ -375,10 +389,49 @@ function createNewGroup($name, $description) {
     echo "OK";
 }
 
-function getGroupsById() {
-    $sql = "select cg.id, cg.name from con_group cg join group_membership gm on cg.id = gm.groupid where gm.userid = :userid;";
+function getAssociationsById() {
+    $where = " join user_roles ur on ca.id = ur.associationid where gm.userid = :userid";
+    $params = [":userid" => $_SESSION['userId']];
+
+    $userRoles = "select roleid from user_roles where :userid = userid;";
+    $res = array_map(
+        function ($userArray) {
+            return $userArray['roleId'];
+        },
+        DB::getInstance()->getConnection()->queryWithValues($userRoles, [':userid' => $_SESSION['userId']])
+    );
+
+    if (in_array("1", $res)) {
+        $where = "";
+        $params = [];
+    }
+
+    $sql = "select ca.id, ca.name from condo_association ca{$where};";
     $dbConn = DB::getInstance()->getConnection();
-    $res = $dbConn->queryWithValues($sql, [":userid" => $_SESSION['userId']]);
+    return $dbConn->queryWithValues($sql, $params);
+}
+
+function getGroupsById($checkForSuperUser = false) {
+    $where = " join group_membership gm on cg.id = gm.groupid where gm.userid = :userid";
+    $params = [":userid" => $_SESSION['userId']];
+
+    if ($checkForSuperUser) {
+        $userRoles = "select roleid from user_roles where :userid = userid;";
+        $res = array_map(
+            function ($userArray) {
+                return $userArray['roleId'];
+            },
+            DB::getInstance()->getConnection()->queryWithValues($userRoles, [':userid' => $_SESSION['userId']])
+        );
+
+        if (in_array("1", $res)) {
+            $where = "";
+            $params = [];
+        }
+    }
+    $sql = "select cg.id, cg.name from con_group cg{$where};";
+    $dbConn = DB::getInstance()->getConnection();
+    $res = $dbConn->queryWithValues($sql, $params);
     return $res;
 }
 
@@ -469,6 +522,48 @@ EOD;
 function getAssociationBuildings($associationId) {
     $sql = "select name from building where associationid = :association_id;";
     return DB::getInstance()->getConnection()->queryWithValues($sql, [":association_id" => $associationId]);
+}
+
+function getReceivedEmailsFromDB($userId) {
+    $sql = "select e.*, u.firstname, u.lastname from emails e 
+            join email_recipients er on e.emailid = er.emailid
+            join users u on er.userid = u.id
+            where er.userid = :user_id order by senton desc;";
+    return DB::getInstance()->getConnection()->queryWithValues($sql, [":user_id" => $userId]);
+}
+
+function getSentEmailsFromDB($userId) {
+    $sql = "select e.*, u.firstname, u.lastname from emails e 
+            join users u on e.userid = u.id
+            where e.userid = :user_id order by senton desc;";
+    return DB::getInstance()->getConnection()->queryWithValues($sql, [":user_id" => $userId]);
+}
+
+function sendEmailInDB($subject, $content, $recipients) {
+    $emailSql = "insert into emails (userid, subject, content) values (:userid, :subject, :content);";
+    $res = DB::getInstance()->getConnection()->queryWithValues(
+        $emailSql, [
+            ":userid" => $_SESSION['userId'],
+            ":subject" => $subject,
+            ":content" => $content
+        ]
+    );
+
+    $newId = DB::getInstance()->getConnection()->query("select LAST_INSERT_ID() as id;")[0]['id'];
+    $recipientParams = [];
+    $recipientPlaceholders = [];
+    $counter = 1;
+    foreach ($recipients as $recip) {
+        $recipientParams[":recip" . $counter] = $recip;
+        $recipientPlaceholders[] = "({$newId}, :recip{$counter})";
+        $counter++;
+    }
+    $placeholders = implode(',', array_values($recipientPlaceholders));
+    $recipientSql = "insert into email_recipients (emailid, userid) values {$placeholders};";
+    $res = DB::getInstance()->getConnection()->querywithValues(
+        $recipientSql,
+        $recipientParams
+    );
 }
 
 /* =====================================================================
