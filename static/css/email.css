@@ -1,5 +1,4 @@
 body{
-    margin-top:20px;
     background: #eee;
 }
 /* Rounded sliders */
@@ -340,4 +339,75 @@ body{
 
 .email-wrapper .message-body .attachments-sections ul li .details .buttons a:last-child {
     margin-right: 0;
+}
+
+#textarea-padding {
+    padding-bottom: 20px;
+}
+
+#email-content-box {
+    overflow: hidden;
+    overflow-wrap: break-word;
+    resize: horizontal;
+    height: 300px;
+    width: 98%;
+    border-radius:20px;
+    display: block;
+    padding: 10px ;
+}
+
+#subject-content-box {
+    overflow: hidden;
+    overflow-wrap: break-word;
+    resize: horizontal;
+    height:45px;
+    width: 98%;
+    min-width: 200px;
+    border-radius:2px;
+    display: block;
+    padding: 1px ;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: #CAE5F8;
+    box-shadow: 0 0 0 2px #CAE5F8;
+}
+
+#send-email-div {
+    display:flex;
+    justify-content:flex-end;
+    width:100%;
+    padding-top:5px;
+    padding-bottom:5px
+}
+
+.right-justified-div {
+    display:flex;
+    justify-content:flex-end;
+    width:100%;
+    padding-top:5px;
+    padding-bottom:5px
+}
+
+#add-user-icon-div {
+    display: none;
+}
+
+.padded-top {
+    padding-top: 10px;
+}
+
+.scrollable-menu {
+    height: auto;
+    max-height: 500px;
+    overflow-x: hidden;
+}
+
+.recipient-group {
+    display: none;
+}
+
+.list-group-item {
+    padding: 3px 10px
 }

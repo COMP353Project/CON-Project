@@ -100,7 +100,10 @@ class PageRenderer {
                 "<link rel=\"stylesheet\" href=\"/css/email.css\">",
                 "<link rel=\"stylesheet\" href=\"//cdn.materialdesignicons.com/3.7.95/css/materialdesignicons.min.css\">",
                 "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css?family=Roboto|Varela+Round\">",
-                "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/icon?family=Material+Icons\">"
+                "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/icon?family=Material+Icons\">",
+            ],
+            "js" => [
+                "<script src=\"/js/email.js\"></script>",
             ]
         ],
     ];

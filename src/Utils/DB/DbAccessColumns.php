@@ -152,6 +152,26 @@ class DbAccessColumns {
         "occupancyrate" => [
             "type" => "float",
             "name" => "occupancyRate"
+        ],
+        "emailid" => [
+            "type" => "string",
+            "name" => "emailId"
+        ],
+        "subject" => [
+            "type" => "string",
+            "name" => "subject"
+        ],
+        "content" => [
+            "type" => "string",
+            "name" => "content"
+        ],
+        "senton" => [
+            "type" => "string",
+            "name" => "sentOn"
+        ],
+        "opened" => [
+            "type" => "bool",
+            "name" => "opened"
         ]
     ];
 }
