@@ -1,0 +1,9 @@
+.padded-top {
+    padding-top: 10px;
+}
+
+.scrollable-menu {
+    height: auto;
+    max-height: 500px;
+    overflow-x: hidden;
+}

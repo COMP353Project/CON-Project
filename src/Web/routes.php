@@ -29,6 +29,7 @@ function setupRoutes($app) {
     $app->get('/users/{userId}/posts/allvisible', 'getPostsVisibleToUser', true);
     $app->get('/users/{userId}/emails/sent', "getSentEmails", true);
     $app->get('/users/{userId}/emails/received', "getReceivedEmails", true);
+    $app->get('/users/{userId}/associations/administered', 'getUserAdministeredAssociations', true);
 
 
     $app->get('/groups/{id}', 'renderGroupPage', true);
@@ -37,10 +38,17 @@ function setupRoutes($app) {
     $app->post('/groups/add/byname', 'createNewGroup', true);
     $app->get("/groups/{groupId}/posts", "getGroupPosts", true);
     $app->get("/groups/{groupId}/members/potential", "getPotentialMembers", true);
+    $app->get("/groups/{groupId}/members", "getCurrentGroupMembers", true);
+    $app->post("/groups/{groupId}/administer", "administerUsersForGroup", true);
+    $app->post("/groups/{groupId}/removeusers", "removeUsersFromGroup", true);
+
+    $app->get('/condos', 'getCondos', true);
 
     $app->get("/association/{associationId}", "renderAssociationPage", true);
     $app->get("/association/{associationId}/posts", "getAssociationPosts", true);
     $app->get('/association/get/byid', 'getAssociationsById', true);
+    $app->post("/association/{associationId}/administer", "administerUsersForAssociation", true);
+    $app->get("/association/{associationId}/members", "getCurrentAssociationMembers", true);
 
     $app->get("/posts/{postId}", "getPost", true);
     $app->get("/posts/{postId}/comments", "getPostComments", true);
@@ -86,7 +94,13 @@ function getUsers(Request $request, $args) {
    $userIds =  (isset($args['userId'])) ?
             $args['userId'] :
             $request->getQueryParam('userid', []);
-    $res = DbApi\getUsersFromDB($userIds);
+    $res = DbApi\getUsersFromDB($userIds, !is_null($request->getQueryParam('extrainfo')));
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getUserAdministeredAssociations(Request $req, $args) {
+    $res = DbAPI\getUserAdministeredAssociationsFromDB($args['userId']);
     header('Content-type: application/json');
     echo json_encode($res);
 }
@@ -232,7 +246,7 @@ function getGroupsById(Request $req, $args) {
 }
 
 function getAssociationsById(Request $req, $args) {
-    $res = DbAPI\getAssociationsById();
+    $res = DbAPI\getAssociationsById(!is_null($req->getQueryParam('extrainfo')));
     header('Content-type: application/json');
     echo json_encode($res);
 }
@@ -284,6 +298,58 @@ function createComment(Request $req, $args) {
 
 function getPotentialMembers(Request $req, $args) {
     $res = DbAPI\getPotentialMembers($_SESSION['userId'], $args['groupId']);
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getCurrentGroupMembers(Request $req, $args) {
+    $res = DbAPI\getCurrentMembersFromDB($_SESSION['userId'], $args['groupId'], "group_membership");
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function getCurrentAssociationMembers(Request $req, $args) {
+    $res = DbAPI\getCurrentMembersFromDB($_SESSION['userId'], $args['associationId'], "user_roles");
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function administerUsersForAssociation(Request $req, $args) {
+    $res = DbAPI\updateUserRoleInDB(
+        $args['associationId'],
+        $req->getPostBodyKey('role'),
+        $req->getPostBodyKey('userIds'),
+        "user_roles"
+    );
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function administerUsersForGroup(Request $req, $args) {
+    $res = DbAPI\updateUserRoleInDB(
+        $args['groupId'],
+        $req->getPostBodyKey('role'),
+        $req->getPostBodyKey('userIds'),
+        "group_membership"
+    );
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+function removeUsersFromGroup(Request $req, $args) {
+    $res = DbAPI\removeUsersFromGroupInDB(
+        $args['groupId'],
+        $req->getPostBodyKey('role'),
+        $req->getPostBodyKey('userIds'),
+        "group_membership"
+    );
+    header('Content-type: application/json');
+    echo json_encode($res);
+}
+
+
+function getCondos(Request $req, $args) {
+    $res = DbAPI\getCondosFromDB($req->getQueryParam('associationid'));
     header('Content-type: application/json');
     echo json_encode($res);
 }

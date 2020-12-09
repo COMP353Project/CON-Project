@@ -9,6 +9,7 @@ class DbAccessColumns {
         ],
         "email" => [
             "type" => "string",
+            "name" => "email"
         ],
         "firstname" => [
             "type" => "string",
@@ -172,6 +173,22 @@ class DbAccessColumns {
         "opened" => [
             "type" => "bool",
             "name" => "opened"
+        ],
+        "sentto" => [
+            "type" => "string",
+            "name" => "sentTo"
+        ],
+        "isadmin" => [
+            "type" => "bool",
+            "name" => "isAdmin"
+        ],
+        "numusers" => [
+            "type" => "int",
+            "name" => "numUsers"
+        ],
+        "buildingid" => [
+            "type" => "string",
+            "name" => "buildingId"
         ]
     ];
 }
