@@ -11,6 +11,36 @@
                 {%T postsContainer %T}
             </div>
             <div class="col-md-3 col-lg-3" id="right-col">
+                <div class="profile-card">
+                    <div class="title"><br/>
+                        <h2 class="name">{%F getUserName %F}</h2>
+                    </div>
+                    <div class="main-container">
+                        <p><i class="fa fa-briefcase info"></i>&nbsp;SCPK Manager & Admin</p>
+                        <p><i class="fa fa-home info"></i>&nbsp;SCPK Road, Montreal, Qc, Canada</p>
+                        {%F getUserInfoForProfile %F}
+                        <hr>
+                        <ul>
+                            <p class="active">
+                                <span>Posts</span>
+                                <strong>7</strong>
+                            </p>
+                            <p>
+                                <span>Following</span>
+                                <strong>5</strong>
+                            </p>
+                            <p>
+                                <span>Followers</span>
+                                <strong>8</strong>
+                            </p>
+                            <p>
+                                <span>Favorites</span>
+                                <strong>6</strong>
+                            </p>
+                        </ul>
+
+                    </div>
+                </div>
                 <div class="row w-100">
                     <H1 class="centered text-center">{%F getGroupName %F}</H1>
                     {%F getGroupInfoForDisplay %F}
