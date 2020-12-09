@@ -5,6 +5,7 @@ var usersCondos = [];
 var assnCondos = null;
 var assnUsers = null;
 var userInfo = null;
+var buildingInfo = null;
 
 var userTableBuilt = false;
 
@@ -82,6 +83,7 @@ function getAssociationsInfo() {
         if (associationInfo !== null) {
             buildAssociationTable();
             getCondoInfo();
+            getBuildingInfo();
             getUserConnections();
         }
     };
@@ -130,6 +132,23 @@ function getUserInfo() {
 }
 
 
+function getBuildingInfo() {
+    let xhttp = new XMLHttpRequest();
+
+    xhttp.open("GET", `/buildings?${administeringAssociations.map(val => 'associationid[]=' + val).join("&")}`);
+    xhttp.responseType = 'json';
+    xhttp.onload  = function() {
+        console.log("RECEIVED BUILDING RESPONSE");
+        console.log(this.response);
+        buildingInfo = this.response;
+        if (associationInfo !== null) {
+            buildBuildingTable();
+        }
+    };
+    xhttp.send();
+}
+
+
 function getCondoInfo() {
     let xhttp = new XMLHttpRequest();
 
@@ -142,6 +161,25 @@ function getCondoInfo() {
         }
     };
     xhttp.send();
+}
+
+
+function buildBuildingTable() {
+    let counter = 1;
+    buildingInfo.forEach(building => {
+        let formatted = `<tr>
+            <td>${counter}</td>
+            <td>${building['id']}</td>
+            <td>${building['associationId']}</td>
+            <td>${building['associationName']}</td>
+            <td>${building['name']}</td>
+            <td>${building['address']}</td>
+            <td>${building['numUnits']}</td>
+            <td>${building['dateBuilt']}</td>
+        </tr>`;
+        $('#building-table tbody').append(formatted);
+        counter++;
+    });
 }
 
 

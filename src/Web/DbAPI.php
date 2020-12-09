@@ -819,6 +819,32 @@ function getCondosFromDB($associationIds) {
 }
 
 
+function getBuildingsFromDB($associationIds) {
+    if (is_null($associationIds)) {
+        $params = [];
+        $placeholders = "";
+    } else {
+        $associationIds = (is_array($associationIds)) ? $associationIds : [$associationIds];
+
+        $counter = 1;
+        $params = [];
+        foreach ($associationIds as $assId) {
+            $key = ":assid" . $counter;
+            $params[$key] = $assId;
+            $counter++;
+        }
+
+        $placeholders = " where b.associationid in (" . implode(", ", array_keys($params)) . ")";
+    }
+
+    $sql = "select b.*, 
+            ca.name as associationname,
+            (select count(*) from condo_unit where buildingid = b.id) as numunits 
+            from building b join condo_association ca on b.associationid = ca.id {$placeholders};";
+    return DB::getInstance()->getConnection()->queryWithValues($sql, $params);
+}
+
+
 
 /* =====================================================================
  *

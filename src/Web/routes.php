@@ -56,6 +56,8 @@ function setupRoutes($app) {
     $app->post("/posts/create/post", "createPost", true);
     $app->post('/posts/create/comment', "createComment", true);
 
+    $app->get("/buildings", "getBuildings", true);
+
     $app->get('/permissions/loggedinuserperms', 'getLoggedInUserPerms');
 
     $app->get('/createaccount', "renderSignUp");
@@ -377,6 +379,13 @@ function sendEmail(Request $req, $args) {
         $req->getPostBodyKey('content'),
         $req->getPostBodyKey('recipients')
     );
+}
+
+
+function getBuildings(Request $req, $args) {
+    $res = DbAPI\getBuildingsFromDB($req->getQueryParam('associationid'));
+    header('Content-type: application/json');
+    echo json_encode($res);
 }
 
 /* =====================================================================

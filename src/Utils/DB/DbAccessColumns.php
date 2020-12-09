@@ -189,6 +189,10 @@ class DbAccessColumns {
         "buildingid" => [
             "type" => "string",
             "name" => "buildingId"
+        ],
+        "associationname" => [
+            "type" => "string",
+            "name" => "associationName"
         ]
     ];
 }
