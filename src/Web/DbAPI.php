@@ -646,7 +646,10 @@ coalesce((select num_users from membership where roleid = 2),0) as numadmins,
 coalesce((select count(*) from (select id from building where associationid = :association_id) x), 0) as numbuildings,
 coalesce((select count(distinct ownerid) from condo_unit where buildingid in (select id from building where associationid = :association_id)), 0) as numowners,
 coalesce((select count(*) from condo_unit where buildingid in (select id from building where associationid = :association_id)), 0) as numunits,
-coalesce(((select count(*) from condo_unit where buildingid in (select id from building where associationid = :association_id) and ownerid is not null) / (select count(*) from condo_unit where buildingid in (select id from building where associationid = :association_id))), 0) * 100 as occupancyrate 
+coalesce(
+    ((select count(*) from condo_unit where buildingid in (select id from building where associationid = :association_id) and ownerid is not null) / 
+    (select count(*) from condo_unit where buildingid in (select id from building where associationid = :association_id))), 0
+) * 100 as occupancyrate 
 from condo_association a
 where id = :association_id;
 EOD;
