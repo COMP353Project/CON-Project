@@ -16,10 +16,20 @@
                         <h2 class="name">{%F getUserName %F}</h2>
                     </div>
                     <div class="main-container">
-                        <p><i class="fa fa-briefcase info"></i>&nbsp;SCPK Manager & Admin</p>
-                        <p><i class="fa fa-home info"></i>&nbsp;SCPK Road, Montreal, Qc, Canada</p>
                         {%F getUserInfoForProfile %F}
                         <hr>
+                        <div class="row w-100">
+                            <h2 class="centered text-center">{%F getGroupName %F}</h2>
+                        </div>
+                        <div class="row w-100">
+                           <p> {%F getGroupInfoForDisplay %F}</p>
+                        </div>
+                        <div class="row w-100">
+                           <p> {%F getGroupAdmins %F}</p>
+                        </div>
+                        <div class="row w-100">
+                           <p> {%F getGroupMembers %F}</p>
+                        </div>
                         <ul>
                             <p class="active">
                                 <span>Posts</span>
@@ -41,7 +51,7 @@
 
                     </div>
                 </div>
-                <div class="row w-100">
+              <!--  <div class="row w-100">
                     <H1 class="centered text-center">{%F getGroupName %F}</H1>
                     {%F getGroupInfoForDisplay %F}
                 </div>
@@ -50,7 +60,7 @@
                 </div>
                 <div class="row w-100">
                     {%F getGroupMembers %F}
-                </div>
+                </div>-->
             </div>
         </div>
     </div>
