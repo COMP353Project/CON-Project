@@ -1,0 +1,111 @@
+1. Unzip the provided compressed folder in a directory under your user's root
+2. Ensure you have:
+   a PHP version >= 7.2.11
+   APACHE 2.X >= installed
+   MySQL 5.X >= installed
+   A MySQL compatible SQL console
+
+   On Windows, these can all be downloaded in the XAmpp bundle, available here:
+   https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.2.11/
+       Make sure to install Xampp in your user's directory, rather than in C:\Program....
+
+3. Configure/create new MySQL database with the following credentials:
+    host=desiredHostName
+    port=3306;
+    dbname=izc353_2
+    user=izc353_2
+    pwd=BYnAgh
+
+4. Take note of where the unzipped CON-Project folder resides
+   example:
+        if the file structure looks like:
+            /home/user/docs/a-dir/another-dir/CON-Project/src
+        the pathName used throughout the rest of these instruction must be:
+            /home/user/docs/a-dir/another-dir
+            {the folder where CON-Project resides}
+
+5. Configure APACHE by doing the following
+
+    sudo vim /etc/apache2/sites-enabled/izc353_2.conf
+
+    in the editor, enter the following, replacing pathName with the actual pathName
+        (for pathName, see step 4)
+    -------------------------------
+
+    <VirtualHost *:80>
+        ServerAdmin anyone@encs.concordia.ca
+        ServerName local-group18-comp-353.concordia.ca
+
+        DocumentRoot "pathName"
+        <Directory "pathName">
+            Options FollowSymLinks MultiViews
+            AllowOverride all
+            Order Deny,Allow
+            Allow from all
+            Require all granted
+        </Directory>
+    </VirtualHost>
+
+    -------------------------------
+    save this
+
+6. Configure your hosts to route requests to the serverName you configured in step 5
+    enter the following command:
+
+    sudo vim /etc/hosts
+
+    in the editor, add the following line, replacing serverName with the serverName entered in step 5
+
+    -------------------------------
+
+    127.0.0.1   serverName
+
+    -------------------------------
+
+
+
+7. go to the folder chosen for pathName from step 4
+   enter the following command:
+
+    vim .htaccess
+
+    in the editor, input the following, where
+         desiredHostName is the same as what it was in step 3
+
+    -------------------------------
+
+
+    RewriteEngine on
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteCond %{REQUEST_FILENAME} !-f
+    # RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteBase /
+    RewriteRule ^(.*)$ /CON-Project/index.php [QSA,L]
+    SetEnv DATABASE_URL "mysql:host=desiredHostName;port=3306;dbname=izc353_2"
+    SetEnv DATABASE_USERNAME "izc353_2"
+    SetENV DATABASE_PWD "BYnAgh"
+
+    -------------------------------
+
+    save this file
+
+
+8. In your preferred MySQL console, login to the database created in step 3.
+    copy and paste the located script in:
+
+    /CON-Project/dbdumps/dump-MASTER.sql
+
+    execute the script. this will create the tables and populate them with info
+
+9. run the following command:
+    sudo systemctl restart apache2
+
+10. navigate to the serverName set in step 5, this should now display the home page!
+        login info for the users created with the db script can be found in:
+
+        /CON-Project/db_scripts/users.json
+
+        the default superuser account information for logging in is:
+            email: superuser@dummy.com
+            password: resurepus
+

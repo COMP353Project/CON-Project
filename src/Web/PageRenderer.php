@@ -68,14 +68,22 @@ class PageRenderer {
             "html" => "static/html/group.html",
             "css" => [
                 "<link rel=\"stylesheet\" href=\"/css/group.css\">",
-                "<link rel=\"stylesheet\" href=\"/css/posts.css\">"
+                "<link rel=\"stylesheet\" href=\"/css/posts.css\">",
+                "<link rel=\"stylesheet\" href=\"/css/administerModal.css\">"
+            ],
+            "js" => [
+                "<script src=\"/js/shortcut_administer.js\"></script>",
             ]
         ],
         "associationPage" => [
             "html" => "static/html/association.html",
             "css" => [
                 "<link rel=\"stylesheet\" href=\"/css/group.css\">",
-                "<link rel=\"stylesheet\" href=\"/css/posts.css\">"
+                "<link rel=\"stylesheet\" href=\"/css/posts.css\">",
+                "<link rel=\"stylesheet\" href=\"/css/administerModal.css\">"
+            ],
+            "js" => [
+                "<script src=\"/js/shortcut_administer.js\"></script>",
             ]
         ],
         "postsContainer" => [
@@ -106,6 +114,15 @@ class PageRenderer {
                 "<script src=\"/js/email.js\"></script>",
             ]
         ],
+        "administerModal" => [
+            "html" => "static/html/administerModal.html",
+            "css" => [
+                "<link rel=\"stylesheet\" href=\"/css/administerModal.css\">"
+            ],
+            "js" => [
+                "<script src=\"/js/shortcut_administer.js\"></script>",
+            ]
+        ]
     ];
 
     private $targetPage;
@@ -236,29 +253,14 @@ class PageRenderer {
 EOD;
         } else {
             // get user info
-            $sql = <<<EOD
-select 
-       u.firstname, 
-       u.lastname, 
-       r.name 
-from users u
-join user_roles ur
-on u.id = ur.userid
-join roles r 
-on r.id = ur.roleid
-where u.id = :user_id
-EOD;
-
-            $userInfo = $this->dbConn->queryWithValues($sql, [":user_id" => $_SESSION['userId']]);
+            $userInfo = DbAPI\getUserWithAssociationRoleNameFromDB($_SESSION['userId']);
             $userName = $userInfo[0]['firstName'] . " " . $userInfo[0]['lastName'];
             $superUserItem = "";
             // administrators get extra button in user dropdown
-            if ($userInfo[0]['name'] == "superuser") {
                 $superUserItem = <<<EOD
 <a class="dropdown-item" href="/administer"><i class="fa fa-database"></i>&nbsp;&nbsp;Administer</a>
                         
 EOD;
-            }
             // create item
             $lastItem = <<<EOD
 <li class="nav-item dropdown">
@@ -277,8 +279,7 @@ EOD;
     }
 
     private function getUserName() : string {
-        $sql = "select firstname, lastname from users where id = :userid";
-        $userInfo = $this->dbConn->queryWithValues($sql, [":userid" => $_SESSION['userId']]);
+        $userInfo = DbAPI\getUserNameFromDB($_SESSION['userId']);
         return $userInfo[0]['firstName'] . " " . $userInfo[0]['lastName'];
     }
 
@@ -353,10 +354,7 @@ EOD;
     }
 
     private function getGroupName() : string {
-        $res = $this->dbConn->queryWithValues(
-            "select name from con_group where id = :group_id",
-            [":group_id" => $this->requestArgs['id']]
-        );
+        $res = DbAPI\getGroupNameFromDB($this->requestArgs['id']);
 
         if (sizeof($res) == 0) {
             return "Invalid GROUP ID";
@@ -397,28 +395,35 @@ EOD;
     private function getGroupMembersByRole($roleName, $roleId, $table = "group_membership"): string {
 
         $table_options = [
-            "group_membership" => ["name" => "groupid"],
-            "user_roles" => ["name" => "associationid"]
+            "group_membership" => ["name" => "groupid", "role_table" => "group_role_def"],
+            "user_roles" => ["name" => "associationid", "role_table" => "roles"]
         ];
 
         $option = $table_options[$table];
         $theId = ($table == "group_membership") ? $this->requestArgs['id'] : $this->requestArgs['associationId'];
 
-        $sql = <<<EOD
-select u.firstname, u.lastname
-from users u 
-join $table g on u.id = g.userid
-where g.{$option['name']} = :groupid and g.roleid = :roleid
-EOD;
-        $res = $this->dbConn->queryWithValues($sql, [
+        $res = DbAPI\getUserHavingRoleFromDB($table, $option['name'], [
             ":groupid" => $theId,
             ":roleid" => $roleId
         ]);
 
+        $adminRes = DbAPI\checkIfUserIsAdmin(
+            $table,
+            $option['name'],
+            $option['role_table'],
+            [':userid' => $_SESSION['userId'], ':groupid' => $theId]
+        );
+
+        $userIsAdmin = sizeof($adminRes) == 1 && $adminRes[0]['isAdmin'];
+        $modalString = ($userIsAdmin && ($this->targetPage == 'groupPage' || ($this->targetPage == 'associationPage' && $roleName == 'ADMINS'))) ?
+            "data-toggle=\"modal\" data-target=\"#administer-user-page\"" :
+            "";
+        $idStr = strtolower($roleName) . "-toggle";
+
         $listHtml = "<ul class=\"list-group w-100\">" .
-            "    <li class=\"list-group-item d-flex justify-content-between align-items-center disabled\">
+            "    <li class=\"list-group-item d-flex justify-content-between align-items-center\">
                  {$roleName}
-                 <span><i class=\"fa fa-cogs\"></i>&nbsp;&nbsp;</span>
+                 <span {$modalString}><i id=\"{$idStr}\" class=\"user-admin-cogs fa fa-cogs\" >&nbsp;</i>&nbsp;&nbsp;</span>
                  </li>" .
             "    %LISTITEMS%" .
             "</ul>";
@@ -433,20 +438,6 @@ EOD;
         }
 
         return str_replace("%LISTITEMS%", $listItems, $listHtml);
-    }
-
-    private function addNewMessage()
-    {
-        //ISSET
-        //Create vars
-        //Do POST
-        //INSERT
-        $sql = "select cg.id, cg.name 
-                from group_membership gm
-                join con_group cg on gm.groupid = cg.id 
-                where gm.userid = :user_id";
-
-        $userGroups = $this->dbConn->queryWithValues($sql, [":user_id" => $_SESSION['userId']]);
     }
 
     private function includeScripts() {
@@ -578,6 +569,30 @@ EOD;
         }
 
         return str_replace("%LISTITEMS%", $listItems, $listHtml);
+    }
+
+    private function generateActionButtons() {
+        if ($this->targetPage == 'groupPage') {
+            return "<button id=\"add-user-privilege\" type=\"button\" class=\"adm-action-btn btn btn-sm btn-outline-secondary\"><i class=\"fa fa-user-plus text-primary mr-1\"></i>Add</button>
+                            <button id=\"remove-user-privilege\" type=\"button\" class=\"adm-action-btn btn btn-sm btn-outline-secondary\"><i class=\"fa fa-user-times text-primary mr-1\"></i>Remove</button>";
+        } else {
+            return "<button id=\"add-user-privilege\" type=\"button\" class=\"adm-action-btn btn btn-sm btn-outline-secondary\"><i class=\"fa fa-user-plus text-primary mr-1\"></i>Add</button>";
+        }
+    }
+
+    private function generateRoleButtons() {
+        if ($this->targetPage == 'groupPage') {
+            return "<button id=\"add-admin-privilege\" type=\"button\" class=\"adm-prlg-btn btn btn-sm btn-outline-secondary\"><i class=\"fa fa-key text-primary mr-1\"></i>Admin</button>
+                            <button id=\"add-member-privilege\" type=\"button\" class=\"adm-prlg-btn btn btn-sm btn-outline-secondary\"><i class=\"fa fa-group text-primary mr-1\"></i>Member</button>";
+        } else {
+            return "<button id=\"add-admin-privilege\" type=\"button\" class=\"adm-prlg-btn btn btn-sm btn-outline-secondary\"><i class=\"fa fa-key text-primary mr-1\"></i>Admin</button>";
+        }
+    }
+
+    private function globalPageAdministerInfo() {
+        return "
+            var userId = '{$_SESSION['userId']}';
+            ";
     }
 }
 

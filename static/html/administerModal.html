@@ -1,0 +1,58 @@
+<div class="modal fade" id="administer-user-page" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Administer Users</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="padded-top">Your Actions</p>
+                <div class="btn-grp-container">
+                    <div class="btn-group" style="display:flex">
+                        {%F generateActionButtons %F}
+                    </div>
+                </div>
+                <p class="padded-top role-selections" id="role-privilege-selection">Role</p>
+                <div class="btn-grp-container role-selections">
+                    <div class="btn-group" style="display:flex">
+                        {%F generateRoleButtons %F}
+                    </div>
+                </div>
+                <p class="padded-top">User selection</p>
+                <div class="dropdown-container" style="display:flex">
+                    <div class="btn-group dropright">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Select Users
+                        </button>
+                        <div class="dropdown-menu scrollable-menu">
+
+                        </div>
+                    </div>
+                </div>
+                <p class="padded-top selected-action">
+                    <strong>Action selected:</strong>
+                    <span id="selected-action-span"></span>
+                </p>
+                <p class="padded-top selected-role">
+                    <strong>Role selected:</strong>
+                    <span id="selected-role-span"></span>
+                </p>
+                <p class="selected-user">
+                    <strong>Users selected:</strong>
+                </p>
+                <div class="chosen-usr-container">
+                    <ul class="list-group list-group-flush chosen-usr-group" style="width: 98%">
+
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="modal-reset" type="button" class="btn btn-primary">Reset</button>
+                <button onclick="administerUsers()" type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>

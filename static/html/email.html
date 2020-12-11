@@ -173,9 +173,9 @@
                         <div class="col-md-12 mb-4 mt-4">
                             <div class="btn-toolbar">
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="mdi mdi-reply text-primary mr-1"></i> Reply</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="mdi mdi-reply-all text-primary mr-1"></i>Reply All</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="mdi mdi-share text-primary mr-1"></i>Forward</button>
+                                    <button id="reply-btn" type="button" class="btn btn-sm btn-outline-secondary"><i class="mdi mdi-reply text-primary mr-1"></i> Reply</button>
+                                    <button id="reply-all-btn" type="button" class="btn btn-sm btn-outline-secondary"><i class="mdi mdi-reply-all text-primary mr-1"></i>Reply All</button>
+                                    <button id="reply-forward-btn" type="button" class="btn btn-sm btn-outline-secondary"><i class="mdi mdi-share text-primary mr-1"></i>Forward</button>
                                 </div>
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-sm btn-outline-secondary"><i class="mdi mdi-attachment text-primary mr-1"></i>Attach</button>
@@ -187,14 +187,19 @@
                     <div class="message-body">
                         <div class="sender-details">
                             <div class="img-container">
-                                <img class="img-sm rounded-circle mr-3" src="http://www.urbanui.com/dashflat/template/images/faces/face11.jpg" alt="">
+<!--                                <img class="img-sm rounded-circle mr-3" src="http://www.urbanui.com/dashflat/template/images/faces/face11.jpg" alt="">-->
+                                <i class="fa fa-user-circle-o fa-4x"></i>
                             </div>
                             <div class="details">
                                 <p class="msg-subject">
                                     Weekly Update - Week 19 (May 8, 2017 - May 14, 2017)
                                 </p>
                                 <p class="sender-email">
-                                    Sarah Graves
+                                    To: Sarah Graves
+                                    <a href="#">itsmesarah268@gmail.com</a>
+                                </p>
+                                <p class="receiver-email">
+                                    From: Sarah Graves
                                     <a href="#">itsmesarah268@gmail.com</a>
                                 </p>
                                 <ul class="list-group list-group-flush recipient-group" style="width: 98%">
@@ -243,6 +248,7 @@
         </div>
     </div>
 </div>
+</div>
 <div class="modal fade" id="selectEmailRecipients" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -269,7 +275,7 @@
                 <div class="dropdown-container" style="display:flex">
                     <div class="btn-group dropright">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Dropright
+                            Select Users
                         </button>
                         <div class="dropdown-menu scrollable-menu">
 

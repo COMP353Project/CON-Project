@@ -263,7 +263,6 @@ $(function () {
     })
 });
 
-autosize($('textarea'));
 /**
  *
  *
@@ -274,15 +273,15 @@ autosize($('textarea'));
  * */
 
 var possibleUsers = null;
+var userInfo = null;
+var userMap = {};
 var sentEmails = null;
 var receivedEmails = null;
-var userInfo = null;
 var isReading = true;
 var associations = null;
 var groups = null;
 var dropdownBuilt = false;
 var recipients = [];
-var recipientDetails = [];
 
 var currentEmails = null;
 
@@ -318,18 +317,31 @@ function setActiveEmail(obj) {
         isReading = true;
         // gotta add the subject back!
         $('.message-body .sender-details .details #textarea-padding').remove();
-        $('.message-body .sender-details .details').prepend("<p class=\"msg-subject\"></p>");
+        $('.message-body .sender-details .details .msg-subject').css('display', 'block');
+        $('.message-body .sender-details .details .sender-email').css('display', 'block');
+        $('.message-body .sender-details .details .receiver-email').css('display', 'block');
+        // $('.message-body .sender-details .details').prepend("<p class=\"msg-subject\"></p>");
         $('#add-user-icon-div').css('display', 'none');
         $('.recipient-group').css('display', 'none');
         $('.recipient-group').empty();
         recipients = [];
     }
-    $('.message-body .sender-details .details .msg-subject')[0].innerHTML = defaultMsgSubject;
+
     if ($('.mail-list.new_mail').length > 0) {
         $('.mail-list.new_mail')[0].classList.remove('new_mail');
     }
+    let currentEmailId = obj.id.split('-')[1];
     obj.classList.add('new_mail');
-    $('.message-body').children('.message-content')[0].innerHTML = currentEmails[obj.id.split('-')[1]]['content'];
+
+    let receiverNames = `To: ` + currentEmails[currentEmailId]['sentTo'].map(usrIdx => userMap[usrIdx]['firstName'] + " " + userMap[usrIdx]['lastName']).join(", ");
+    let senderName = "From: " + userMap[currentEmails[currentEmailId]['userId']]['firstName'] + " " + userMap[currentEmails[currentEmailId]['userId']]['lastName'];
+    console.log(receiverNames);
+
+    $('.message-body .sender-details .details').children('.msg-subject')[0].innerHTML = currentEmails[currentEmailId]['subject'];
+    $('.message-body .sender-details .details .sender-email')[0].innerHTML = senderName;
+    $('.message-body .sender-details .details .receiver-email')[0].innerHTML = receiverNames;
+    $('.message-body').children('.message-content')[0].innerHTML = currentEmails[currentEmailId]['content'];
+
 }
 
 $(".mail-list").click(function() {
@@ -347,39 +359,75 @@ $('#add-user-icon-div').click(function() {
     }
 });
 
+$('#reply-btn').click(function() {
+    replyBtnAction('RE:');
+});
+
+$('#reply-all-btn').click(function() {
+    replyBtnAction('RE:', true);
+});
+
+$('#reply-forward-btn').click(function() {
+    replyBtnAction('FW:');
+});
+
+function replyBtnAction(actionId, all=false) {
+    let emailId = $('.mail-list.new_mail')[0].id.split('-')[1];
+    let email = currentEmails[emailId];
+    let recip;
+    if (actionId.localeCompare("RE:") === 0 && !all) {
+        recip = [email['userId']];
+    }
+    else if (actionId.localeCompare("FW:") === 0) {
+        recip = [];
+    }
+    else {
+        recip = [email['userId']].concat(email['sentTo'].filter(idx => idx.localeCompare(userId.toString()) !== 0));
+    }
+
+    console.log(email);
+
+    replyInfo = {
+        'recipients': recip,
+        'subject': `${actionId} ${email['subject']}`,
+        'content': `
 
 
-function prepareCompose() {
+-----------------------------------------------------
+${email['content'].split('<br>').map(line => "  " + line).join('\n')}`
+    };
+
+    prepareCompose(replyInfo);
+}
+
+
+
+function prepareCompose(replyInfo = null) {
     console.log('clickedComposed');
     if (isReading) {
         isReading = false;
-        $('.message-body .sender-details .details .msg-subject').remove();
+        $('.message-body .sender-details .details .msg-subject').css('display', 'none');
+        $('.message-body .sender-details .details .sender-email').css('display', 'none');
+        $('.message-body .sender-details .details .receiver-email').css('display', 'none');
         $('.message-body .message-content').empty();
         $('.message-body .sender-details .details').prepend(subjectTextArea);
         $('.message-body .message-content').append(emailTextArea);
+        autosize($('textarea'));
         $('#add-user-icon-div').css('display', 'flex');
         $('.recipient-group').css('display', 'flex');
-        $('.sender-email').css('display', 'none');
     } else {
         $('#subject-content-box').val('');
         $('#email-content-box').val('');
         $('.recipient-group').empty();
         recipients = [];
     }
-}
 
-
-
-function getUserConnections() {
-    let xhttp = new XMLHttpRequest();
-    xhttp.open("GET", `/users/${userId}/connections`);
-    xhttp.responseType = 'json';
-    xhttp.onload  = function() {
-        possibleUsers = this.response;
-        getUserInfo();
-    };
-
-    xhttp.send();
+    if (replyInfo != null) {
+        $('#subject-content-box').val(replyInfo['subject']);
+        $('#email-content-box').val(replyInfo['content']);
+        recipients = replyInfo['recipients'];
+        saveSelectedRecipients();
+    }
 }
 
 function getAssociations() {
@@ -475,27 +523,6 @@ function processEmails(dbResponse) {
     return emailObj;
 }
 
-function getUserInfo() {
-    let windowN = 250;
-    let userParams = possibleUsers.allUsers.map(uid => `userid[]=${uid}`);
-    // batch get user info
-    for (let i = 0; i < userParams.length; i += windowN) {
-        let xhttp = new XMLHttpRequest();
-        let windowEnd = (i + windowN - 1 < userParams.length) ? i + windowN - 1 : userParams.length;
-        let joinedParams = userParams.slice(i, windowEnd).join("&");
-        xhttp.open("GET", `users?${joinedParams}`);
-        xhttp.responseType = 'json';
-        xhttp.onload  = function() {
-            if (null == userInfo) {
-                userInfo = this.response;
-            } else {
-                userInfo = userInfo.concat(this.response);
-            }
-        };
-        xhttp.send();
-    }
-}
-
 function buildDropDownMenu() {
 
     userInfo.forEach(userInf=> {
@@ -556,6 +583,45 @@ function buildEmailList(emails) {
         setActiveEmail(this)
     });
 }
+
+
+function getUserConnections() {
+    let xhttp = new XMLHttpRequest();
+    xhttp.open("GET", `/users/${userId}/connections`);
+    xhttp.responseType = 'json';
+    xhttp.onload  = function() {
+        possibleUsers = this.response;
+        getUserInfo();
+    };
+
+    xhttp.send();
+}
+
+function getUserInfo() {
+    let windowN = 250;
+    let userParams = possibleUsers.allUsers.map(uid => `userid[]=${uid}`);
+    // batch get user info
+    for (let i = 0; i < userParams.length; i += windowN) {
+        let xhttp = new XMLHttpRequest();
+        let windowEnd = (i + windowN - 1 < userParams.length) ? i + windowN: userParams.length;
+        let joinedParams = userParams.slice(i, windowEnd).join("&");
+        xhttp.open("GET", `/users?${joinedParams}`);
+        xhttp.responseType = 'json';
+        xhttp.onload  = function() {
+            if (null == userInfo) {
+                userInfo = this.response;
+            } else {
+                userInfo = userInfo.concat(this.response);
+            }
+            this.response.forEach(usr => {
+                userMap[usr['id']] = usr;
+            });
+        };
+        xhttp.send();
+    }
+}
+
+
 
 
 

@@ -411,3 +411,7 @@ input:focus, textarea:focus {
 .list-group-item {
     padding: 3px 10px
 }
+
+.details {
+    padding-left: 10px;
+}
