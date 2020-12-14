@@ -258,18 +258,18 @@ EOD;
             $superUserItem = "";
             // administrators get extra button in user dropdown
                 $superUserItem = <<<EOD
-<a class="dropdown-item" href="/administer"><i class="fa fa-database"></i>&nbsp;&nbsp;Administer</a>
+<a class="dropdown-item" href="/administer"><i class="fa fa-database" style="color:#bf003f"></i>&nbsp;&nbsp;<span style="color:#bf003f">Administer</a>
                         
 EOD;
             // create item
             $lastItem = <<<EOD
 <li class="nav-item dropdown">
-                    <a class="btn-floating btn-lg black dropdown-toggle" type="button" id="dropdown-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle"></i></a>
+                    <a class="btn-floating btn-lg black dropdown-toggle" type="button" id="dropdown-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle" style="color:#bf003f"></i></a>
                     <div class="dropdown-menu dropdown-primary dropdown-menu-right">
-                        <a class="dropdown-item">$userName</a>
-                        <a class="dropdown-item" href="/profile"><i class="fa fa-user-secret"></i>&nbsp;&nbsp;Your Page</a>
-                        $superUserItem<a class="dropdown-item" href="/email"><i class="fa fa-envelope"></i>&nbsp;&nbsp;Check mail</a>
-                        <a class="dropdown-item" href="/logout"><i class="fa fa-user-times"></i>&nbsp;&nbsp;Log Out</a>
+                        <a class="dropdown-item"><span style="color:#bf003f">$userName</a>
+                        <a class="dropdown-item" href="/profile"><i class="fa fa-user-secret" style="color:#bf003f"></i>&nbsp;&nbsp;<span style="color:#bf003f">Your Page</span></a>
+                        $superUserItem<a class="dropdown-item" href="/email"><i class="fa fa-envelope"style="color:#bf003f"></i>&nbsp;&nbsp;<span style="color:#bf003f">Check mail</span></a>
+                        <a class="dropdown-item" href="/logout"><i class="fa fa-user-times"style="color:#bf003f"></i>&nbsp;&nbsp;<span style="color:#bf003f">Log Out</span></a>
                     </div>
                 </li>
 EOD;

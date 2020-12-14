@@ -133,3 +133,269 @@
     cursor:pointer;
     transition:0.7s;
 }
+/*----------------Team Members-----------*/
+#team{
+    padding-top:50px;
+    padding-bottom:50px;
+    color:#555;
+}
+h1{
+    text-align: center;
+    color: #555 !important;
+    padding-bottom:10px;
+}
+h1::after{
+    content:'';
+    background: #bf003f;
+    display:block;
+    height:3px;
+    width:170px;
+    margin:20px auto 5px;
+}
+.profile-pic{
+    margin-top:25px;
+}
+.profile-pic .img-box{
+    opacity:1;
+    display:block;
+    position:relative;
+}
+.profile-pic .img-box img{
+    filter: grayscale(1);
+}
+.profile-pic .img-box img:hover{
+    filter: grayscale(0);
+    cursor:pointer;
+}
+.profile-pic h2{
+    font-size:22px;
+    font-weight:bold;
+    margin-top:15px;
+    color:#bf003f !important;
+}
+.profile-pic h3{
+    font-size:15px;
+    font-weight:bold;
+    margin-top:15px;
+}
+/*
+#team .fa{
+    height:25px;
+    width:25px;
+    color:#bf003f !important;
+    background:#fff;
+    padding:4px;
+    border-radius:50%;
+}
+.img-box ul{
+    padding: 15px 0;
+    position:absolute;
+    z-index: 2;
+    bottom:0;
+    left:50%;
+    transform: translateX(-50%);
+    opacity:0;
+}
+.img-box ul li{
+    padding:2px;
+    display:inline-block;
+}
+.img-box:hover ul{
+    opacity: 1;
+}
+.img-box ul, .img-box ul li{
+    transition:0.5s;
+}*/
+
+/*--------------promo------------*/
+#promo{
+    background-image:linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.7)), url(img/partial-bg.jpg);
+    background-size: cover;
+    background-position: center;
+    color:#fff;
+    backgrounf-attachment: fixed;
+    text-align: center;
+    padding: 100px;
+    font-family:sans-serif;
+    font-size:38px;
+}
+#promo .btn-primary{
+    margin-top:20px;
+    margin-bottom:30px;
+    background-color: #b0043e;
+}
+/*--------------price plans------------*/
+#price{
+    padding: 40px 0;
+    background:#efefef;
+}
+.single-price{
+    margin: 10px auto;
+    display: inline;
+    float:left;
+    width:100%;
+    background-color:#ffffff;
+    transition:0.5s;
+}
+.single-price:hover{
+    box-shadow:0 2px 20px #333;
+
+}
+.price-head{
+    background-color: #bf003f;
+    display:inline;
+    float:left;
+    padding: 10px 5px;
+    text-align:center;
+    width:100%;
+}
+.price-head h2{
+    color:#fff;
+    font-size:30px;
+    font-width:bold;
+    margin-bottom:5px;
+    padding: 5px;
+    text-transform: uppercase;
+}
+.price-head p{
+    font-size:25px;
+    color:#ccc;
+    font-weight:bold;
+    line-height:30px;
+}
+#price span{
+    font-size:15px;
+}
+.price-content{
+    display:inline;
+    float:left;
+    width:100%;
+    padding:0 15px;
+}
+.price-content ul li{
+    border-bottom:1px solid #efefef;
+    padding:15px 10px;
+    list-style: none;
+}
+ul li:last-child{
+    border:none;
+}
+.fa-check-circle{
+    color:green;
+    margin-right:10px;
+    font-size: 20px;
+}
+.fa-times-circle{
+    color: #ff0000;
+    margin-right:10px;
+    font-size: 20px;
+}
+.price-button{
+    display:inline;
+    float:left;
+    padding:15px 15px 30px;
+    text-align:center;
+    width:100%;
+}
+.buy-btn{
+    background-color: #bf003f;
+    border-radius:3px;
+    display:inline-block;
+    font-size:18px;
+    padding:15px 50px;
+    transition:0.5s;
+}
+.buy-btn:hover{
+    border:1px solid;
+    border-color:#fff;
+    background-color: #b0043e;
+}
+a{
+    text-decoration:none !important;
+    color: #fff!important;
+}
+
+/*--------------founders------------*/
+#founders{
+    padding-top:50px;
+    padding-bottom:50px;
+}
+#founders .row{
+    margin-top:30px;
+}
+.col-md-4{
+    margin:40px auto;
+}
+.profile{
+    padding:70px 10px 10px;
+    background-color:#efefef;
+}
+.user{
+    width:120px;
+    heigt:120px;
+    border-radius: 50%;
+}
+.profile img{
+    top:-60px;
+    position:absolute;
+    left:calc(50% - 60px);
+    border:10px solid #fff;
+}
+.profile h3{
+    font-size:20px;
+    margin-top:15px;
+    color: #b0043e;
+}
+#founders span{
+    font-size: 12px;
+    color:#333;
+}
+.profile:hover{
+    box-shadow: 0 0 15px 5px; rgba(0,0,0,0.2);
+    cursor:pointer;
+    transition:0.5s;
+}
+/*--------------contact us------------*/
+#contact{
+    background:#efefef;
+    padding-top:40px;
+    padding-bottom:40px;
+    color:#777;
+}
+.contact-form{
+    padding:15px;
+}
+.form-control{
+    border-radius:0 !important;
+    border:none !important;
+}
+::placeholder{
+    color:#999 !important;
+}
+.follow{
+    background:#fff;
+    padding:10px;
+    margin:15px;
+}
+.contact-info .fa{
+    margin: 10px;
+    color: #b0043e;
+    font-weight:bold;
+}
+.contact-form button{
+    margin-top:20px;
+    margin-bottom:30px;
+    color:#fff;
+    background-color: #b0043e;
+}
+.follow span{
+    font-size: 12px;
+    color:#333;
+}
+/*--------------footer------------*/
+#footer{
+    background:#333;
+    color: #b0043e;
+    padding:12px;
+}
+

@@ -9,13 +9,40 @@
                 <div class="col-md-9 col-lg-9" id="left-col">
 
 
-                    {%T postsContainer %T}
+                    <!--{%T postsContainer %T}-->
                 </div>
                 <div class="col-md-3 col-lg-3" id="right-col">
-                    <div class="row">
-                        <H1 class="centered text-center">{%F getUserName %F}</H1></span>
-                        {%F getUserInfoForProfile %F}
+                    <!--profile card starts here:-->
+                    <div class="profile-card">
+                            <div class="title"><br/>
+                                <h2 class="name">{%F getUserName %F}</h2>
+                            </div>
+                        <div class="main-container">
+                            {%F getUserInfoForProfile %F}
+                            <hr>
+                            <ul>
+                                <p class="active">
+                                    <span>Posts</span>
+                                    <strong>7</strong>
+                                </p>
+                                <p>
+                                    <span>Following</span>
+                                    <strong>5</strong>
+                                </p>
+                                <p>
+                                    <span>Followers</span>
+                                    <strong>8</strong>
+                                </p>
+                                <p>
+                                    <span>Favorites</span>
+                                    <strong>6</strong>
+                                </p>
+                            </ul>
+
+                        </div>
                     </div>
+                    <!--profile card ends here-->
+
                     <div class="row">
                         {%F getUserGroups %F}
                     </div>
