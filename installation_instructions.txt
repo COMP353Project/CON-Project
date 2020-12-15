@@ -109,3 +109,7 @@
             email: superuser@dummy.com
             password: resurepus
 
+	further information about logging on as other users can be found in the Database section of the report
+
+
+
